@@ -7,9 +7,14 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/../kafe/thirdparty
 )
 
+set(
+    SOURCE_FILES
+    ${PROJECT_SOURCE_DIR}/main.cpp
+)
+
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE kafe)
+target_link_libraries(${PROJECT_NAME} PRIVATE Kafe)
 
 set_target_properties(
     ${PROJECT_NAME}
