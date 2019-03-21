@@ -3,14 +3,26 @@
 
 #include <string>
 #include <optional>
+#include <stdexcept>
 #include <kafe/internal/charpred.hpp>
 
 namespace kafe
 {
+    struct ParseError : public std::runtime_error
+    {
+        const int row;
+        const int col;
+        const std::string exp;
+        const int sym;
+
+        ParseError(const std::string& what, int row, int col, std::string exp, int sym) :
+            std::runtime_error(what), row(row), col(col), exp(std::move(exp)), sym(sym)
+        {}
+    };
+
     class Parser
     {
     public:
-        // default constructor for Parser, initializing code to "", doing nothing else
         Parser();
         ~Parser();
 
