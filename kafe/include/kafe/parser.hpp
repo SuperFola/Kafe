@@ -3,12 +3,10 @@
 
 #include <string>
 #include <optional>
+#include <kafe/internal/charpred.hpp>
 
 namespace kafe
 {
-    // code bidon
-    class Declaration {};
-
     class Parser
     {
     public:
@@ -24,15 +22,7 @@ namespace kafe
     private:
         std::string m_code;
 
-        /*
-            A parser will either return a value or not depending
-            on if it was able to parse the given code or not.
-            If the first(s) token(s) were parsed but it found an
-            unknown token, it will log the error and return std::nullopt.
-
-            Note to future self: should set a carry flag?
-        */
-        std::optional<Declaration> parseDeclaration(const std::string& code);
+        bool accept(const CharPred& t, std::string& s);
     };
 }
 
