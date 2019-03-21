@@ -22,7 +22,7 @@ namespace kafe
             virtual bool operator() (const int c) const = 0;
         };
 
-        struct IsSpace : public CharPred
+        inline struct IsSpace : public CharPred
         {
             IsSpace() : CharPred("space") {}
             virtual bool operator() (const int c) const override
@@ -31,7 +31,7 @@ namespace kafe
             }
         } IsSpace;
 
-        struct IsDigit : public CharPred
+        inline struct IsDigit : public CharPred
         {
             IsDigit() : CharPred("digit") {}
             virtual bool operator() (const int c) const override
@@ -40,7 +40,7 @@ namespace kafe
             }
         } IsDigit;
 
-        struct IsUpper : public CharPred
+        inline struct IsUpper : public CharPred
         {
             IsUpper() : CharPred("uppercase") {}
             virtual bool operator() (const int c) const override
@@ -49,7 +49,7 @@ namespace kafe
             }
         } IsUpper;
 
-        struct IsLower : public CharPred
+        inline struct IsLower : public CharPred
         {
             IsLower() : CharPred("lowercase") {}
             virtual bool operator() (const int c) const override
@@ -58,7 +58,7 @@ namespace kafe
             }
         } IsLower;
 
-        struct IsAlpha : public CharPred
+        inline struct IsAlpha : public CharPred
         {
             IsAlpha() : CharPred("alphabetic") {}
             virtual bool operator() (const int c) const override
@@ -67,7 +67,7 @@ namespace kafe
             }
         } IsAlpha;
 
-        struct IsAlnum : public CharPred
+        inline struct IsAlnum : public CharPred
         {
             IsAlnum() : CharPred("alphanumeric") {}
             virtual bool operator() (const int c) const override
@@ -76,7 +76,7 @@ namespace kafe
             }
         } IsAlnum;
 
-        struct IsPrint : public CharPred
+        inline struct IsPrint : public CharPred
         {
             IsPrint() : CharPred("printable") {}
             virtual bool operator() (const int c) const override

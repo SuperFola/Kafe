@@ -1,7 +1,6 @@
 #ifndef kafe_internal_parser_hpp
 #define kafe_internal_parser_hpp
 
-#include <istream>
 #include <string>
 #include <stdexcept>
 #include <kafe/internal/charpred.hpp>
@@ -25,11 +24,11 @@ namespace kafe
         class Parser
         {
         public:
-            Parser(std::istream& f);
+            Parser(const std::string& s);
             ~Parser();
         
         private:
-            std::streambuf* m_in;
+            std::string m_in;
             int m_count;
             int m_row;
             int m_col;
@@ -48,6 +47,9 @@ namespace kafe
             int getCol();
             int getRow();
             int getCount();
+            bool isEOF();
+
+            void back(std::size_t n);
 
             /*
                 Function to use and check if a Character Predicate was able to parse
