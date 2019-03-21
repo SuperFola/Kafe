@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 namespace kafe
 {
@@ -15,6 +16,8 @@ namespace kafe
             Node(const std::string& nodename);
 
             const std::string nodename;
+
+            virtual std::ostream& toString(std::ostream& os) = 0;
         };
 
         using NodePtr = std::unique_ptr<Node>;
@@ -29,17 +32,19 @@ namespace kafe
                 To add a Node to a program:
                 program.append<NodeType>(arg1, arg2);
             */
-            template <typename T, typename Args...>
+            template <typename T, typename... Args>
             void append(Args&&... args)
             {
                 children.push_back(
                     std::move(
-                        std::make_unique<T>(std::forward(args)...);
+                        std::make_unique<T>(std::forward<Args>(args)...)
                         )
                     );
             }
 
             NodePtrList children;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         // Node handling declaration, i.e. varname: type
@@ -49,6 +54,8 @@ namespace kafe
 
             const std::string varname;
             const std::string type;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         // Node handling definition, i.e. varname: type = value
@@ -59,6 +66,8 @@ namespace kafe
             const std::string varname;
             const std::string type;
             NodePtr value;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         // Node handling constants: cst name: type = value
@@ -69,6 +78,8 @@ namespace kafe
             const std::string varname;
             const std::string type;
             NodePtr value;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         // Node handling function: fun name(arg1: A, arg2: B) -> C *body* end
@@ -80,6 +91,8 @@ namespace kafe
             NodePtrList arguments;  // should be a vector of declaration
             const std::string type;
             NodePtrList body;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         struct Class : public Node
@@ -90,6 +103,8 @@ namespace kafe
             NodePtr constructor;  // should be a function
             NodePtrList methods;  // should be a vector of function
             NodePtrList attributes;  // should be a vector of definition/declaration
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         /*
@@ -114,6 +129,8 @@ namespace kafe
             NodePtrList body;
             NodePtrList elifClause;  // should be a vector of ifclause (acting as elifs)
             NodePtrList elseClause;  // contains the body of the else clause
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         /*
@@ -129,13 +146,17 @@ namespace kafe
 
             NodePtr condition;
             NodePtrList body;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         struct Integer : public Node
         {
-            Number(int n);
+            Integer(int n);
 
             const int value;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         struct Float : public Node
@@ -143,6 +164,8 @@ namespace kafe
             Float(float f);
 
             const float value;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         struct String : public Node
@@ -150,6 +173,8 @@ namespace kafe
             String(const std::string& s);
 
             const std::string value;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
 
         struct Bool : public Node
@@ -157,6 +182,8 @@ namespace kafe
             Bool(bool b);
 
             const bool value;
+
+            virtual std::ostream& toString(std::ostream& os);
         };
     }
 }

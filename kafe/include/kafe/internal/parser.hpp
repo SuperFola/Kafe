@@ -21,11 +21,11 @@ namespace kafe
             {}
         };
 
-        class Parser
+        class ParserCombinators
         {
         public:
-            Parser(const std::string& s);
-            ~Parser();
+            ParserCombinators(const std::string& s);
+            ~ParserCombinators();
         
         private:
             std::string m_in;

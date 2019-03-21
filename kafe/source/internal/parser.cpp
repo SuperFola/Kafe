@@ -3,7 +3,7 @@
 
 using namespace kafe::internal;
 
-Parser::Parser(const std::string& s) :
+ParserCombinators::ParserCombinators(const std::string& s) :
     m_in(s), m_count(0), m_row(1), m_col(1)
 {
     // if the input string is empty, raise an error
@@ -17,10 +17,10 @@ Parser::Parser(const std::string& s) :
     next();
 }
 
-Parser::~Parser()
+ParserCombinators::~ParserCombinators()
 {}
 
-void Parser::next()
+void ParserCombinators::next()
 {
     // getting a character from the stream
     m_sym = m_in[m_count];
@@ -38,27 +38,27 @@ void Parser::next()
     }
 }
 
-int Parser::getCol()
+int ParserCombinators::getCol()
 {
     return m_col;
 }
 
-int Parser::getRow()
+int ParserCombinators::getRow()
 {
     return m_row;
 }
 
-int Parser::getCount()
+int ParserCombinators::getCount()
 {
     return m_count;
 }
 
-bool Parser::isEOF()
+bool ParserCombinators::isEOF()
 {
     return m_sym == '\0';
 }
 
-void Parser::back(std::size_t n)
+void ParserCombinators::back(std::size_t n)
 {
     // going back into the string and adjusting the rows count
     for (std::size_t i=0; i < n; i++)
@@ -81,7 +81,7 @@ void Parser::back(std::size_t n)
     next();  // getting the 'new' current character
 }
 
-bool Parser::accept(const CharPred& t, std::string* s)
+bool ParserCombinators::accept(const CharPred& t, std::string* s)
 {
     // return false if the predicate couldn't consume the symbol
     if (!t(m_sym))
@@ -93,7 +93,7 @@ bool Parser::accept(const CharPred& t, std::string* s)
     return true;
 }
 
-bool Parser::except(const CharPred& t, std::string* s)
+bool ParserCombinators::except(const CharPred& t, std::string* s)
 {
     // throw an error if the predicate couldn't consume the symbol
     if (!t(m_sym))
@@ -105,7 +105,7 @@ bool Parser::except(const CharPred& t, std::string* s)
     return true;
 }
 
-bool Parser::space(std::string* s)
+bool ParserCombinators::space(std::string* s)
 {
     if (accept(IsSpace))
     {
@@ -118,7 +118,7 @@ bool Parser::space(std::string* s)
     return false;
 }
 
-bool Parser::number(std::string* s)
+bool ParserCombinators::number(std::string* s)
 {
     if (accept(IsDigit, s))
     {
@@ -130,12 +130,12 @@ bool Parser::number(std::string* s)
     return false;
 }
 
-bool Parser::signedNumber(std::string* s)
+bool ParserCombinators::signedNumber(std::string* s)
 {
     return accept(IsMinus, s), number(s);
 }
 
-bool Parser::name(std::string* s)
+bool ParserCombinators::name(std::string* s)
 {
     // first character of a name must be alphabetic
     if (accept(IsAlpha, s))

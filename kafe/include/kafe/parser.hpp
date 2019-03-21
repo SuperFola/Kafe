@@ -7,7 +7,7 @@
 
 namespace kafe
 {
-    class Parser : private internal::Parser
+    class Parser : private internal::ParserCombinators
     {
     public:
         Parser(const std::string& code);

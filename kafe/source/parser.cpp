@@ -5,7 +5,7 @@ using namespace kafe;
 using namespace kafe::internal;
 
 Parser::Parser(const std::string& code) :
-    internal::Parser(code)
+    internal::ParserCombinators(code)
     , m_node(nullptr)
 {}
 
@@ -25,7 +25,7 @@ void Parser::parse()
             break;  // back(getCount() - current + 1);
     }
 
-    std::cout << m_program << std::endl;
+    m_program.toString(std::cout);
 }
 
 bool Parser::parseDeclaration()
@@ -65,7 +65,7 @@ bool Parser::parseDeclaration()
         space();
         parseExp();  // throw an exception if it couldn't
         
-        m_program.append<Definition>(varname, type, m_node);
+        m_program.append<Definition>(varname, type, std::move(m_node));
         return true;
     }
 }
@@ -107,7 +107,7 @@ bool Parser::parseInt()
     std::string n = "";
     if (signedNumber(&n))
     {
-        m_node = std::make_unique<Number>(std::stoi(n));
+        m_node = std::make_unique<Integer>(std::stoi(n));
         return true;
     }
     return false;
@@ -130,8 +130,8 @@ bool Parser::parseString()
 
     if (accept(IsChar('"'), &s))
     {
-        while (accept(IsNot('"'), &s));
-        except(IsChar('"', &s));
+        while (accept(IsNot(IsChar('"')), &s));
+        except(IsChar('"'), &s);
 
         // remove " at the beginning and end
         s.erase(0, 1);
