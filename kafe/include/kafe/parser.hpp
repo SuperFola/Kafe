@@ -3,17 +3,20 @@
 
 #include <kafe/internal/parser.hpp>
 #include <string>
-#include <sstream>
 
 namespace kafe
 {
     class Parser : private internal::Parser
     {
+    public:
         Parser(const std::string& code);
-        Parser(std::istream& input);
         ~Parser();
 
         void parse();
+    
+    private:
+        // parsers
+        bool parseDeclaration();
     };
 }
 

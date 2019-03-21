@@ -1,11 +1,21 @@
 #include <kafe/internal/parser.hpp>
+#include <iostream>
 
 using namespace kafe::internal;
 
-// NB: does not check f.good(), it's not its role
-Parser::Parser(std::istream& f) :
-    m_in(f.rdbuf()), m_count(0), m_row(1), m_col(1), m_sym(m_in->sbumpc())
-{}
+Parser::Parser(const std::string& s) :
+    m_in(s), m_count(0), m_row(1), m_col(1)
+{
+    // if the input string is empty, raise an error
+    if (s.size() == 0)
+    {
+        m_sym = EOF;
+        error("Expected symbol, got empty string", "");
+    }
+
+    // otherwise, get the first symbol
+    next();
+}
 
 Parser::~Parser()
 {}
@@ -13,9 +23,7 @@ Parser::~Parser()
 void Parser::next()
 {
     // getting a character from the stream
-    m_sym = m_in->sgetc();
-    m_in->snextc();
-
+    m_sym = m_in[m_count];
     ++m_count;
 
     // new line
@@ -43,6 +51,34 @@ int Parser::getRow()
 int Parser::getCount()
 {
     return m_count;
+}
+
+bool Parser::isEOF()
+{
+    return m_sym == '\0';
+}
+
+void Parser::back(std::size_t n)
+{
+    // going back into the string and adjusting the rows count
+    for (std::size_t i=0; i < n; i++)
+    {
+        m_sym = m_in[m_count];
+        --m_count;
+
+        std::cout << "$";
+
+        if (m_sym == '\n')
+            --m_row;
+    }
+
+    // adjusting the columns count
+    auto count = m_count;
+    while (m_sym != '\n' && count != 0)
+        --count;
+    m_col = m_count - count;
+
+    next();  // getting the 'new' current character
 }
 
 bool Parser::accept(const CharPred& t, std::string* s)
