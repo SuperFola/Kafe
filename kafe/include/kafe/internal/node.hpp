@@ -151,6 +151,13 @@ namespace kafe
 
             const std::string value;
         };
+
+        struct Bool : public Node
+        {
+            Bool(bool b);
+
+            const bool value;
+        };
     }
 }
 

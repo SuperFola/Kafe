@@ -3,6 +3,7 @@
 
 #include <kafe/internal/parser.hpp>
 #include <string>
+#include <kafe/internal/node.hpp>
 
 namespace kafe
 {
@@ -15,9 +16,16 @@ namespace kafe
         void parse();
     
     private:
+        internal::Program m_program;
+        internal::NodePtr m_node;
+
         // parsers
         bool parseDeclaration();
         bool parseExp();
+            bool parseInt();
+            bool parseFloat();
+            bool parseString();
+            bool parseBool();
     };
 }
 

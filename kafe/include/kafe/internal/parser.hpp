@@ -34,15 +34,15 @@ namespace kafe
             int m_col;
             int m_sym;
 
+            // getting next character and changing the values of count/row/col/sym
+            void next();
+
+        protected:
             inline void error(const std::string& error, const std::string exp)
             {
                 throw ParseError(error, m_row, m_col, exp, m_sym);
             }
 
-            // getting next character and changing the values of count/row/col/sym
-            void next();
-
-        protected:
             // basic getters
             int getCol();
             int getRow();

@@ -81,3 +81,10 @@ String::String(const std::string& s) :
     value(s)
     , Node("string")
 {}
+
+// ---------------------------
+
+Bool::Bool(bool b) :
+    value(b)
+    , Node("bool")
+{}
