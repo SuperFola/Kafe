@@ -6,32 +6,27 @@ int main()
     std::cout << "testing Kafe" << std::endl;
 
     {
-        kafe::Parser p;
-        p.feed("x:type=test");
+        kafe::Parser p("x:type=test");
         p.parse();
     }
 
     {
-        kafe::Parser p;
-        p.feed("x : type=test");
+        kafe::Parser p("x : type=test");
         p.parse();
     }
 
     {
-        kafe::Parser p;
-        p.feed("x:type = test");
+        kafe::Parser p("x:type = test");
         p.parse();
     }
 
     {
-        kafe::Parser p;
-        p.feed("x:type");
+        kafe::Parser p("x:type");
         p.parse();
     }
 
     {
-        kafe::Parser p;
-        p.feed("x::type=test");
+        kafe::Parser p("x::type=test");
         p.parse();
     }
 
