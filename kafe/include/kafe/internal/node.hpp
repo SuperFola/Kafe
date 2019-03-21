@@ -130,6 +130,27 @@ namespace kafe
             NodePtr condition;
             NodePtrList body;
         };
+
+        struct Integer : public Node
+        {
+            Number(int n);
+
+            const int value;
+        };
+
+        struct Float : public Node
+        {
+            Float(float f);
+
+            const float value;
+        };
+
+        struct String : public Node
+        {
+            String(const std::string& s);
+
+            const std::string value;
+        };
     }
 }
 

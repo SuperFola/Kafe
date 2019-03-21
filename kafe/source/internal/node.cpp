@@ -60,3 +60,24 @@ WhileLoop::WhileLoop(NodePtr condition, NodePtrList body) :
     condition(std::move(condition)), body(std::move(body))
     , Node("while")
 {}
+
+// ---------------------------
+
+Number::Number(int n) :
+    value(n)
+    , Node("integer")
+{}
+
+// ---------------------------
+
+Float::Float(float f) :
+    value(f)
+    , Node("float")
+{}
+
+// ---------------------------
+
+String::String(const std::string& s) :
+    value(s)
+    , Node("string")
+{}
