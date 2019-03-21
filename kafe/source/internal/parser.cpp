@@ -1,5 +1,4 @@
 #include <kafe/internal/parser.hpp>
-#include <iostream>
 
 using namespace kafe::internal;
 
@@ -65,8 +64,6 @@ void ParserCombinators::back(std::size_t n)
     {
         m_sym = m_in[m_count];
         --m_count;
-
-        std::cout << "$";
 
         if (m_sym == '\n')
             --m_row;

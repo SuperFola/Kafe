@@ -26,6 +26,7 @@ void Parser::parse()
     }
 
     m_program.toString(std::cout);
+    std::cout << "\n";
 }
 
 bool Parser::parseDeclaration()

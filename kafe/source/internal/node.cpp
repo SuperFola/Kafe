@@ -46,7 +46,10 @@ std::ostream& Definition::toString(std::ostream& os)
 {
     os << "(Definition (VarName " << varname << ") (Type "
         << type << ") ";
-    value->toString(os);
+    if (value)
+        value->toString(os);
+    else
+        os << "NO VALUE";
     os << ")";
     return os;
 }
