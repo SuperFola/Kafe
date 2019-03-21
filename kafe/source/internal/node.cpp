@@ -46,3 +46,17 @@ Class::Class(const std::string& name, NodePtr constructor, NodePtrList methods, 
     name(name), constructor(std::move(constructor)), methods(std::move(methods)), attributes(std::move(attributes))
     , Node("class")
 {}
+
+// ---------------------------
+
+IfClause::IfClause(NodePtr condition, NodePtrList body, NodePtrList elifClause, NodePtrList elseClause) :
+    condition(std::move(condition)), body(std::move(body)), elifClause(std::move(elifClause)), elseClause(std::move(elseClause))
+    , Node("if")
+{}
+
+// ---------------------------
+
+WhileLoop::WhileLoop(NodePtr condition, NodePtrList body) :
+    condition(std::move(condition)), body(std::move(body))
+    , Node("while")
+{}

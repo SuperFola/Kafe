@@ -77,7 +77,7 @@ namespace kafe
             Function(const std::string& name, NodePtrList arguments, const std::string& type, NodePtrList body);
 
             const std::string name;
-            NodePtrList arguments;
+            NodePtrList arguments;  // should be a vector of declaration
             const std::string type;
             NodePtrList body;
         };
@@ -87,9 +87,48 @@ namespace kafe
             Class(const std::string& name, NodePtr constructor, NodePtrList methods, NodePtrList attributes);
 
             const std::string name;
-            NodePtr constructor;
-            NodePtrList methods;
-            NodePtrList attributes;
+            NodePtr constructor;  // should be a function
+            NodePtrList methods;  // should be a vector of function
+            NodePtrList attributes;  // should be a vector of definition/declaration
+        };
+
+        /*
+            Node handling:
+
+            if cond then
+                stuff here
+            elif cond2 then
+                stuff here
+            elif cond3 then
+                stuff here
+            ...
+            else
+                stuff
+            end
+        */
+        struct IfClause : public Node
+        {
+            IfClause(NodePtr condition, NodePtrList body, NodePtrList elifClause, NodePtrList elseClause);
+
+            NodePtr condition;
+            NodePtrList body;
+            NodePtrList elifClause;  // should be a vector of ifclause (acting as elifs)
+            NodePtrList elseClause;  // contains the body of the else clause
+        };
+
+        /*
+            Node handling:
+
+            while cond do
+                stuff here
+            end
+        */
+        struct WhileLoop : public Node
+        {
+            WhileLoop(NodePtr condition, NodePtrList body);
+
+            NodePtr condition;
+            NodePtrList body;
         };
     }
 }
