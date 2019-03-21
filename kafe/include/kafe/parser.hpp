@@ -17,6 +17,7 @@ namespace kafe
     private:
         // parsers
         bool parseDeclaration();
+        bool parseExp();
     };
 }
 

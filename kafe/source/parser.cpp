@@ -15,23 +15,11 @@ void Parser::parse()
     // parse until the end of the string
     while (!isEOF())
     {
+        // save current position in buffer to be able to go back if needed
         auto current = getCount();
-        if (parseDeclaration())
-            std::cout << "parsed declaration" << std::endl;
-        else
-        {
-            std::cout << "error" << std::endl;
-            auto old = getCount();
+
+        if (!parseDeclaration())
             back(getCount() - current + 1);
-            std::cout
-                << current << " "
-                << old << " "
-                << getCol() << " "
-                << getRow() << " "
-                << getCount()
-                << std::endl;
-            break;
-        }
     }
 }
 
