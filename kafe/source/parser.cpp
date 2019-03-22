@@ -19,9 +19,15 @@ void Parser::parse()
         // save current position in buffer to be able to go back if needed
         auto current = getCount();
 
-        // TEST
-        if (!parseDeclaration())
-            break;  // back(getCount() - current + 1);
+        if (parseDeclaration())
+            continue;
+        else
+            back(getCount() - current + 1);
+        
+        if (parseConstDef())
+            continue;
+        else
+            back(getCount() - current + 1);
     }
 }
 

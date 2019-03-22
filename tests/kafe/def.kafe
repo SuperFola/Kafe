@@ -1,0 +1,16 @@
+x:int
+x: int
+x :int
+x : int
+
+x:int=1
+x: int=1
+x :int=1
+x : int=1
+
+x:int = 1
+x: int = 1
+x :int = 1
+x : int = 1
+
+cst x:int=1

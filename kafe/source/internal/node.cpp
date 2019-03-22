@@ -17,10 +17,10 @@ std::ostream& Program::toString(std::ostream& os)
     os << "(Program";
     for (auto& node: children)
     {
-        os << " ";
+        os << "\n    ";
         node->toString(os);
     }
-    os << ")";
+    os << "\n)";
     return os;
 }
 
