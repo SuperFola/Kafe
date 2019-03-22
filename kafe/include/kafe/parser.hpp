@@ -5,9 +5,12 @@
 #include <string>
 #include <kafe/internal/node.hpp>
 #include <iostream>
+#include <optional>
 
 namespace kafe
 {
+    using MaybeNodePtr = std::optional<internal::NodePtr>;
+
     class Parser : private internal::ParserCombinators
     {
     public:
@@ -19,16 +22,18 @@ namespace kafe
     
     private:
         internal::Program m_program;
-        internal::NodePtr m_node;
 
         // parsers
-        bool parseDeclaration();
-        bool parseConstDef();
-        bool parseExp();
-            bool parseInt();
-            bool parseFloat();
-            bool parseString();
-            bool parseBool();
+        MaybeNodePtr parseInstruction();
+        MaybeNodePtr parseDeclaration();
+        MaybeNodePtr parseConstDef();
+        MaybeNodePtr parseExp();
+            MaybeNodePtr parseInt();
+            MaybeNodePtr parseFloat();
+            MaybeNodePtr parseString();
+            MaybeNodePtr parseBool();
+        MaybeNodePtr parseEnd();
+        MaybeNodePtr parseFunction();
     };
 }
 

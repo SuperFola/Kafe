@@ -1,0 +1,8 @@
+fun main() -> int
+    x : int = 10
+end
+
+fun bis(x: int) -> int
+    y: int = 12
+    z: string = "test aya"
+end

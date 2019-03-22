@@ -35,7 +35,15 @@ int main()
     {
         // parsing
         kafe::Parser p(readFile(file));
-        p.parse();
+        try
+        {
+            p.parse();
+        }
+        catch (const kafe::internal::ParseError& e)
+        {
+            std::cout << "ParseError: " << e.what() << " " << e.exp << std::endl;
+            std::cout << "At " << ((char) e.sym) << " @ " << e.row << ":" << e.col << std::endl;
+        }
 
         // getting AST
         std::ostringstream os;
@@ -49,7 +57,6 @@ int main()
         else
         {
             ++failed;
-            std::cout << "Failed test " << i << std::endl;
         }
         
         ++i;

@@ -1,0 +1,4 @@
+(Program
+    (Function (Name main) (Args) (Type int) (Body (Definition (VarName x) (Type int) (Integer 10))))
+    (Function (Name bis) (Args (Declaration (VarName x) (Type int))) (Type int) (Body (Definition (VarName y) (Type int) (Integer 12)) (Definition (VarName z) (Type string) (String test aya))))
+)

@@ -5,7 +5,6 @@ using namespace kafe::internal;
 
 Parser::Parser(const std::string& code) :
     internal::ParserCombinators(code)
-    , m_node(nullptr)
 {}
 
 Parser::~Parser()
@@ -16,18 +15,14 @@ void Parser::parse()
     // parse until the end of the string
     while (!isEOF())
     {
-        // save current position in buffer to be able to go back if needed
-        auto current = getCount();
-
-        if (parseDeclaration())
-            continue;
+        MaybeNodePtr inst = parseInstruction();
+        if (!inst)
+        {
+            std::cout << "Parse error" << std::endl;
+            break;
+        }
         else
-            back(getCount() - current + 1);
-        
-        if (parseConstDef())
-            continue;
-        else
-            back(getCount() - current + 1);
+            m_program.children.push_back(std::move(inst.value()));
     }
 }
 
@@ -36,7 +31,38 @@ void Parser::ASTtoString(std::ostream& os)
     m_program.toString(os);
 }
 
-bool Parser::parseDeclaration()
+MaybeNodePtr Parser::parseInstruction()
+{
+    // save current position in buffer to be able to go back if needed
+    auto current = getCount();
+
+    // x:type, x:type=value
+    if (auto inst = parseDeclaration())
+        return inst;
+    else
+        back(getCount() - current + 1);
+    
+    // cst x:type=value
+    if (auto inst = parseConstDef())
+        return inst;
+    else
+        back(getCount() - current + 1);
+    
+    // fun name(arg:type, ...) -> type {body} end
+    if (auto inst = parseFunction())
+        return inst;
+    else
+        back(getCount() - current + 1);
+    
+    if (auto inst = parseEnd())
+        return inst;
+    else
+        back(getCount() - current + 1);
+    
+    return {};
+}
+
+MaybeNodePtr Parser::parseDeclaration()
 {
     /*
         Trying to parse those kind of expression:
@@ -49,36 +75,33 @@ bool Parser::parseDeclaration()
 
     std::string varname = "";
     if (!name(&varname))
-        return false;
+        return {};
     
     space();
     // : after varname and before type is mandatory
     if (!accept(internal::IsChar(':')))
-        return false;
+        return {};
     space();
 
     std::string type = "";
     if (!name(&type))
-        return false;
+        return {};
     
     space();
     // checking for value (optional)
     if (!accept(internal::IsChar('=')))
-    {
-        m_program.append<Declaration>(varname, type);
-        return true;
-    }
+        return std::make_shared<Declaration>(varname, type);
     else
     {
         space();
-        parseExp();  // throw an exception if it couldn't
-        
-        m_program.append<Definition>(varname, type, std::move(m_node));
-        return true;
+
+        // throw an exception if it couldn't
+        MaybeNodePtr exp = parseExp();
+        return std::make_shared<Definition>(varname, type, exp.value());
     }
 }
 
-bool Parser::parseConstDef()
+MaybeNodePtr Parser::parseConstDef()
 {
     /*
         Trying to parse constant definitions:
@@ -92,15 +115,15 @@ bool Parser::parseConstDef()
     // checking if 'cst' is present
     std::string const_qualifier = "";
     if (!name(&const_qualifier))
-        return false;
+        return {};
     if (const_qualifier != "cst")
-        return false;
+        return {};
     
     space();
 
     std::string varname = "";
     if (!name(&varname))
-        return false;
+        return {};
     
     space();
     // : after varname and before type is mandatory
@@ -109,20 +132,19 @@ bool Parser::parseConstDef()
 
     std::string type = "";
     if (!name(&type))
-        return false;
+        return {};
     
     space();
     // checking for value
     except(internal::IsChar('='));
     space();
     
-    parseExp();  // throw an exception if it couldn't
-        
-    m_program.append<ConstDef>(varname, type, std::move(m_node));
-    return true;
+    // throw an exception if it couldn't
+    MaybeNodePtr exp = parseExp();
+    return std::make_shared<ConstDef>(varname, type, exp.value());
 }
 
-bool Parser::parseExp()
+MaybeNodePtr Parser::parseExp()
 {
     /*
         Trying to parse right hand side values, such as:
@@ -139,52 +161,46 @@ bool Parser::parseExp()
     auto current = getCount();
 
     // parsing float before integer because float requires a '.'
-    if (!parseFloat())
-        back(getCount() - current + 1);
+    if (auto exp = parseFloat())
+        return exp;
     else
-        return true;
+        back(getCount() - current + 1);
 
-    if (!parseInt())
-        back(getCount() - current + 1);
+    if (auto exp = parseInt())
+        return exp;
     else
-        return true;
+        back(getCount() - current + 1);
 
-    if (!parseString())
-        back(getCount() - current + 1);
+    if (auto exp = parseString())
+        return exp;
     else
-        return true;
+        back(getCount() - current + 1);
 
-    if (!parseBool())
-        back(getCount() - current + 1);
+    if (auto exp = parseBool())
+        return exp;
     else
-        return true;
+        back(getCount() - current + 1);
 
     error("Couldn't parse expression", "???");
 }
 
-bool Parser::parseInt()
+MaybeNodePtr Parser::parseInt()
 {
     std::string n = "";
     if (signedNumber(&n))
-    {
-        m_node = std::make_unique<Integer>(std::stoi(n));
-        return true;
-    }
-    return false;
+        return std::make_shared<Integer>(std::stoi(n));
+    return {};
 }
 
-bool Parser::parseFloat()
+MaybeNodePtr Parser::parseFloat()
 {
     std::string f = "";
     if (signedNumber(&f) && accept(IsChar('.'), &f) && number(&f))
-    {
-        m_node = std::make_unique<Float>(std::stof(f));
-        return true;
-    }
-    return false;
+        return std::make_shared<Float>(std::stof(f));
+    return {};
 }
 
-bool Parser::parseString()
+MaybeNodePtr Parser::parseString()
 {
     std::string s = "";
 
@@ -197,26 +213,139 @@ bool Parser::parseString()
         s.erase(0, 1);
         s.erase(s.end() - 1);
 
-        m_node = std::make_unique<String>(s);
-
-        return true;
+        return std::make_shared<String>(s);
     }
-    return false;
+    return {};
 }
 
-bool Parser::parseBool()
+MaybeNodePtr Parser::parseBool()
 {
     std::string s = "";
 
     if (!name(&s))
-        return false;
+        return {};
     
     if (s == "false")
-        m_node = std::make_unique<Bool>(false);
+        return std::make_shared<Bool>(false);
     else if (s == "true")
-        m_node = std::make_unique<Bool>(true);
+        return std::make_shared<Bool>(true);
     else
         error("Expected 'true' or 'false'", s);
     
-    return true;
+    return {};
+}
+
+MaybeNodePtr Parser::parseEnd()
+{
+    /*
+        Trying to parse 'end' tokens
+    */
+
+    space();
+
+    std::string keyword = "";
+    if (!name(&keyword))
+        return {};
+    if (keyword != "end")
+        return {};
+    
+    return std::make_shared<End>();
+}
+
+MaybeNodePtr Parser::parseFunction()
+{
+    /*
+        Trying to parse functions:
+
+        fun name(arg: type, arg2: type, ...) -> type
+            code...
+        end
+
+        NB: code... can (should) include a 'ret value'
+    */
+
+    // eat trailing white spaces
+    space();
+
+    // checking for 'fun'
+    std::string keyword = "";
+    if (!name(&keyword))
+        return {};
+    if (keyword != "fun")
+        return {};
+
+    space();
+
+    // getting name
+    std::string funcname = "";
+    if (!name(&funcname))
+        return {};
+    
+    space();
+
+    // getting arguments (enclosed in ())
+    NodePtrList arguments;
+    if (except(IsChar('(')))
+    {
+        while (true)
+        {
+            // eat the trailing white space
+            space();
+
+            // check if end of arguments
+            if (accept(IsChar(')')))
+                break;
+
+            std::string varname = "";
+            if (!name(&varname))
+                break;  // we don't have arguments
+            
+            space();
+            // : after varname and before type is mandatory
+            if (!except(internal::IsChar(':')))
+                return {};
+            space();
+
+            std::string type = "";
+            if (!name(&type))
+                return {};
+            
+            space();
+
+            // register argument
+            arguments.push_back(
+                std::make_shared<Declaration>(varname, type)
+            );
+        }
+    }
+
+    space();
+    // need the full '->'
+    except(IsChar('-')); except(IsChar('>'));
+    space();
+
+    // getting function type
+    std::string type = "";
+    if (!name(&type))
+        return {};
+    
+    // getting the body
+    NodePtrList body;
+    while (true)
+    {
+        MaybeNodePtr inst = parseInstruction();
+
+        // after getting the instruction, check if it's valid
+        if (inst)
+        {
+            // if we found a 'end' token, stop
+            if (inst.value()->nodename == "end")
+                break;
+            body.push_back(inst.value());
+        }
+        else
+            return {};
+    }
+
+    return std::make_shared<Function>(funcname, arguments, type, body);
 }

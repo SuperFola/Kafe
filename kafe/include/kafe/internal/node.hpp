@@ -20,7 +20,7 @@ namespace kafe
             virtual std::ostream& toString(std::ostream& os) = 0;
         };
 
-        using NodePtr = std::unique_ptr<Node>;
+        using NodePtr = std::shared_ptr<Node>;
         using NodePtrList = std::vector<NodePtr>;
 
         // basic class to hold all the sub-nodes
@@ -37,7 +37,7 @@ namespace kafe
             {
                 children.push_back(
                     std::move(
-                        std::make_unique<T>(std::forward<Args>(args)...)
+                        std::make_shared<T>(std::forward<Args>(args)...)
                         )
                     );
             }
@@ -182,6 +182,13 @@ namespace kafe
             Bool(bool b);
 
             const bool value;
+
+            virtual std::ostream& toString(std::ostream& os);
+        };
+
+        struct End : public Node
+        {
+            End();
 
             virtual std::ostream& toString(std::ostream& os);
         };

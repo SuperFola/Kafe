@@ -82,7 +82,19 @@ Function::Function(const std::string& name, NodePtrList arguments, const std::st
 
 std::ostream& Function::toString(std::ostream& os)
 {
-    os << "(Function)";
+    os << "(Function (Name " << name << ") (Args";
+    for (auto& node: arguments)
+    {
+        os << " ";
+        node->toString(os);
+    }
+    os << ") (Type " << type << ") (Body";
+    for (auto& node: body)
+    {
+        os << " ";
+        node->toString(os);
+    }
+    os << "))";
     return os;
 }
 
@@ -174,5 +186,17 @@ Bool::Bool(bool b) :
 std::ostream& Bool::toString(std::ostream& os)
 {
     os << "(Bool " << (value ? "true" : "false") << ")";
+    return os;
+}
+
+// ---------------------------
+
+End::End() :
+    Node("end")
+{}
+
+std::ostream& End::toString(std::ostream& os)
+{
+    os << "(End)";
     return os;
 }
