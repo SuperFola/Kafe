@@ -10,11 +10,13 @@ include_directories(
 set(
     SOURCE_FILES
     ${PROJECT_SOURCE_DIR}/main.cpp
+    ${PROJECT_SOURCE_DIR}/main.hpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Kafe)
+target_link_libraries(${PROJECT_NAME} PRIVATE stdc++fs)
 
 set_target_properties(
     ${PROJECT_NAME}

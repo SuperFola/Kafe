@@ -13,7 +13,7 @@ project(
 # enable -fPIC because we are building a library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-list(KAFE_INCLUDE_DIR
+set(KAFE_INCLUDE_DIR
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/thirdparty
 )
