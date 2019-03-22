@@ -13,10 +13,12 @@ project(
 # enable -fPIC because we are building a library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-include_directories(
+list(KAFE_INCLUDE_DIR
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/thirdparty
 )
+
+include_directories(${KAFE_INCLUDE_DIR})
 
 file(GLOB_RECURSE SOURCE_FILES
     ${PROJECT_SOURCE_DIR}/source/*.cpp
