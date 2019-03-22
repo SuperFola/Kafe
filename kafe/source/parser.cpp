@@ -1,5 +1,4 @@
 #include <kafe/parser.hpp>
-#include <iostream>  // testing
 
 using namespace kafe;
 using namespace kafe::internal;
@@ -24,9 +23,11 @@ void Parser::parse()
         if (!parseDeclaration())
             break;  // back(getCount() - current + 1);
     }
+}
 
-    m_program.toString(std::cout);
-    std::cout << "\n";
+void Parser::ASTtoString(std::ostream& os)
+{
+    m_program.toString(os);
 }
 
 bool Parser::parseDeclaration()
@@ -71,6 +72,50 @@ bool Parser::parseDeclaration()
     }
 }
 
+bool Parser::parseConstDef()
+{
+    /*
+        Trying to parse constant definitions:
+
+        cst var : type = value
+    */
+
+    // eat the trailing white space
+    space();
+
+    // checking if 'cst' is present
+    std::string const_qualifier = "";
+    if (!name(&const_qualifier))
+        return false;
+    if (const_qualifier != "cst")
+        return false;
+    
+    space();
+
+    std::string varname = "";
+    if (!name(&varname))
+        return false;
+    
+    space();
+    // : after varname and before type is mandatory
+    except(internal::IsChar(':'));
+    space();
+
+    std::string type = "";
+    if (!name(&type))
+        return false;
+    
+    space();
+    // checking for value
+    except(internal::IsChar('='));
+    space();
+    
+    parseExp();  // throw an exception if it couldn't
+        
+    m_program.append<ConstDef>(varname, type, std::move(m_node));
+    return true;
+}
+
 bool Parser::parseExp()
 {
     /*
@@ -90,17 +135,25 @@ bool Parser::parseExp()
     // parsing float before integer because float requires a '.'
     if (!parseFloat())
         back(getCount() - current + 1);
-    else if (!parseInt())
-        back(getCount() - current + 1);
-    else if (!parseString())
-        back(getCount() - current + 1);
-    else if (!parseBool())
-        back(getCount() - current + 1);
-    // ...
     else
-        error("Couldn't parse expression", "???");
-    
-    return true;
+        return true;
+
+    if (!parseInt())
+        back(getCount() - current + 1);
+    else
+        return true;
+
+    if (!parseString())
+        back(getCount() - current + 1);
+    else
+        return true;
+
+    if (!parseBool())
+        back(getCount() - current + 1);
+    else
+        return true;
+
+    error("Couldn't parse expression", "???");
 }
 
 bool Parser::parseInt()

@@ -14,9 +14,12 @@ Program::Program() :
 
 std::ostream& Program::toString(std::ostream& os)
 {
-    os << "(Program ";
+    os << "(Program";
     for (auto& node: children)
+    {
+        os << " ";
         node->toString(os);
+    }
     os << ")";
     return os;
 }

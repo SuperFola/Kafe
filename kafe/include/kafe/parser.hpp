@@ -4,6 +4,7 @@
 #include <kafe/internal/parser.hpp>
 #include <string>
 #include <kafe/internal/node.hpp>
+#include <iostream>
 
 namespace kafe
 {
@@ -14,6 +15,7 @@ namespace kafe
         ~Parser();
 
         void parse();
+        void ASTtoString(std::ostream& os);
     
     private:
         internal::Program m_program;
@@ -21,6 +23,7 @@ namespace kafe
 
         // parsers
         bool parseDeclaration();
+        bool parseConstDef();
         bool parseExp();
             bool parseInt();
             bool parseFloat();

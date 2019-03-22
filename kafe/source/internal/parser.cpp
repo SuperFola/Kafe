@@ -70,8 +70,8 @@ void ParserCombinators::back(std::size_t n)
     }
 
     // adjusting the columns count
-    auto count = m_count;
-    while (m_sym != '\n' && count != 0)
+    int count = m_count;
+    while (m_in[count] != '\n' && count != 0)
         --count;
     m_col = m_count - count;
 
