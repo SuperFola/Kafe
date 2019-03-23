@@ -58,6 +58,7 @@ int main()
         else
         {
             ++failed;
+            std::cout << "Test '" << file << "' (" << i << ") failed" << std::endl;
         }
         
         ++i;

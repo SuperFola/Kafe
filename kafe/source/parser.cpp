@@ -18,7 +18,7 @@ void Parser::parse()
         MaybeNodePtr inst = parseInstruction();
         if (!inst)
         {
-            std::cout << "Parse error" << std::endl;
+            std::cout << "[Parser] Error, couldn't recognize instruction" << std::endl;
             break;
         }
         else
@@ -54,8 +54,16 @@ MaybeNodePtr Parser::parseInstruction()
     else
         back(getCount() - current + 1);
     
+    // token 'end' closing a block
     if (auto inst = parseEnd())
         return inst;
+    else
+        back(getCount() - current + 1);
+    
+
+    // should be the last one of the list
+    if (auto inst = parseFunctionCall())
+        error("Function calls as instructions are forbidden", "");
     else
         back(getCount() - current + 1);
     
@@ -85,7 +93,7 @@ MaybeNodePtr Parser::parseDeclaration()
 
     std::string type = "";
     if (!name(&type))
-        return {};
+        error("Expected type name for declaration", type);
     
     space();
     // checking for value (optional)
@@ -123,7 +131,7 @@ MaybeNodePtr Parser::parseConstDef()
 
     std::string varname = "";
     if (!name(&varname))
-        return {};
+        error("Expected constant name", varname);
     
     space();
     // : after varname and before type is mandatory
@@ -132,7 +140,7 @@ MaybeNodePtr Parser::parseConstDef()
 
     std::string type = "";
     if (!name(&type))
-        return {};
+        error("Expected type name for constant definition", type);
     
     space();
     // checking for value
@@ -161,22 +169,27 @@ MaybeNodePtr Parser::parseExp()
     auto current = getCount();
 
     // parsing float before integer because float requires a '.'
-    if (auto exp = parseFloat())
+    if (auto exp = parseFloat())  // 1.5
         return exp;
     else
         back(getCount() - current + 1);
 
-    if (auto exp = parseInt())
+    if (auto exp = parseInt())  // 42
         return exp;
     else
         back(getCount() - current + 1);
 
-    if (auto exp = parseString())
+    if (auto exp = parseString())  // "hello world"
         return exp;
     else
         back(getCount() - current + 1);
 
-    if (auto exp = parseBool())
+    if (auto exp = parseBool())  // true
+        return exp;
+    else
+        back(getCount() - current + 1);
+    
+    if (auto exp = parseFunctionCall())  // foo(42, -6.66)
         return exp;
     else
         back(getCount() - current + 1);
@@ -229,8 +242,6 @@ MaybeNodePtr Parser::parseBool()
         return std::make_shared<Bool>(false);
     else if (s == "true")
         return std::make_shared<Bool>(true);
-    else
-        error("Expected 'true' or 'false'", s);
     
     return {};
 }
@@ -248,9 +259,11 @@ MaybeNodePtr Parser::parseFunctionCall()
     space();
 
     // getting the name of the function
-    std::string name = "";
-    if (!name(&name))
+    std::string funcname = "";
+    if (!name(&funcname))
         return {};
+    
+    space();
     
     // getting the arguments
     NodePtrList arguments;
@@ -266,26 +279,19 @@ MaybeNodePtr Parser::parseFunctionCall()
                 break;
 
             // find argument
-            // after getting the instruction, check if it's valid
-            if (auto inst = parseInstruction())
-                body.push_back(inst.value());
-            else
-                return {};
-            
-            space();
+            MaybeNodePtr inst = parseExp();  // throw an error if it couldn't
+            arguments.push_back(inst.value());
 
-            // register argument
-            arguments.push_back(
-                std::make_shared<Declaration>(varname, type)
-            );
+            space();
 
             // check for ',' -> other arguments
             if (accept(IsChar(',')))
                 continue;
         }
 
-        return std::make_shared<FunctionCall>(name, arguments);
+        return std::make_shared<FunctionCall>(funcname, arguments);
     }
+    return {};
 }
 
 MaybeNodePtr Parser::parseEnd()
@@ -332,7 +338,7 @@ MaybeNodePtr Parser::parseFunction()
     // getting name
     std::string funcname = "";
     if (!name(&funcname))
-        return {};
+        error("Expected function name", funcname);
     
     space();
 
@@ -356,12 +362,12 @@ MaybeNodePtr Parser::parseFunction()
             space();
             // : after varname and before type is mandatory
             if (!except(internal::IsChar(':')))
-                return {};
+                error("Expected ':' after argument name and before type name", "");
             space();
 
             std::string type = "";
             if (!name(&type))
-                return {};
+                error("Expected type name for argument in function definition", type);
             
             space();
 
@@ -384,7 +390,7 @@ MaybeNodePtr Parser::parseFunction()
     // getting function type
     std::string type = "";
     if (!name(&type))
-        return {};
+        error("Expected return type for function definition", type);
     
     // getting the body
     NodePtrList body;
@@ -401,7 +407,7 @@ MaybeNodePtr Parser::parseFunction()
             body.push_back(inst.value());
         }
         else
-            return {};
+            error("Expected valid instruction for body of function definition", "");
     }
 
     return std::make_shared<Function>(funcname, arguments, type, body);

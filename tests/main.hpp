@@ -29,6 +29,7 @@ inline std::string readFile(const std::string& name)
 inline bool deepCompareString(const std::string& a, const std::string& b)
 {
     std::string line = "";
+    std::string line2 = "";
     std::size_t index = 0;
     std::size_t row = 1;
 
@@ -51,9 +52,15 @@ inline bool deepCompareString(const std::string& a, const std::string& b)
             line += b[i];
             ++index;
         }
+
+        if (a[i] == '\n')
+            line2 = "";
+        else
+            line2 += a[i];
         
         if (a[i] != b[i])
         {
+            std::cout << "\nDeepCompareString failed" << std::endl;
             std::cout << line << " (line: " << row << ")\n";
             if (index > 0)
             {
@@ -61,6 +68,7 @@ inline bool deepCompareString(const std::string& a, const std::string& b)
                     std::cout << "~";
             }
             std::cout << "^" << std::endl;
+            std::cout << "Expected: " << line2 << "\n" << std::endl;
             return false;
         }
     }
