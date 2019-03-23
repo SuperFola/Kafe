@@ -1,19 +1,107 @@
 (Program
-    (Declaration (VarName x) (Type int))
-    (Declaration (VarName x) (Type int))
-    (Declaration (VarName x) (Type int))
-    (Declaration (VarName x) (Type int))
-    (Definition (VarName x) (Type int) (Integer 1))
-    (Definition (VarName x) (Type int) (Integer 1))
-    (Definition (VarName x) (Type int) (Integer 1))
-    (Definition (VarName x) (Type int) (Integer 1))
-    (Definition (VarName x) (Type int) (Integer 1))
-    (Definition (VarName x) (Type int) (Integer 1))
-    (Definition (VarName x) (Type int) (Integer 1))
-    (Definition (VarName x) (Type int) (Integer 1))
-    (ConstDef (VarName x) (Type int) (Integer 1))
-    (Definition (VarName x) (Type int) (FunctionCall (Name foo) (Args)))
-    (Definition (VarName x) (Type int) (FunctionCall (Name foo) (Args (Integer 1))))
-    (Definition (VarName x) (Type int) (FunctionCall (Name foo) (Args (Integer 1) (String hello))))
-    (Definition (VarName x) (Type int) (FunctionCall (Name foo) (Args (FunctionCall (Name foo) (Args (Integer 1))))))
+    (Declaration
+        (VarName x)
+        (Type int)
+    )
+    (Declaration
+        (VarName x)
+        (Type int)
+    )
+    (Declaration
+        (VarName x)
+        (Type int)
+    )
+    (Declaration
+        (VarName x)
+        (Type int)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (ConstDef
+        (VarName x)
+        (Type int)
+        (Integer 1)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (FunctionCall
+            (Name foo)
+            (Args)
+        )
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (FunctionCall
+            (Name foo)
+            (Args
+                (Integer 1)
+            )
+        )
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (FunctionCall
+            (Name foo)
+            (Args
+                (Integer 1)
+                (String "hello")
+            )
+        )
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (FunctionCall
+            (Name foo)
+            (Args
+                (FunctionCall
+                    (Name foo)
+                    (Args
+                        (Integer 1)
+                    )
+                )
+            )
+        )
+    )
 )

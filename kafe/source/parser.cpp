@@ -28,7 +28,7 @@ void Parser::parse()
 
 void Parser::ASTtoString(std::ostream& os)
 {
-    m_program.toString(os);
+    m_program.toString(os, /* default indentation level */ 0);
 }
 
 MaybeNodePtr Parser::parseInstruction()

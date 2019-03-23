@@ -17,7 +17,7 @@ namespace kafe
 
             const std::string nodename;
 
-            virtual std::ostream& toString(std::ostream& os) = 0;
+            virtual void toString(std::ostream& os, std::size_t indent) = 0;
         };
 
         using NodePtr = std::shared_ptr<Node>;
@@ -44,7 +44,7 @@ namespace kafe
 
             NodePtrList children;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         // Node handling declaration, i.e. varname: type
@@ -55,7 +55,7 @@ namespace kafe
             const std::string varname;
             const std::string type;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         // Node handling definition, i.e. varname: type = value
@@ -67,7 +67,7 @@ namespace kafe
             const std::string type;
             NodePtr value;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         // Node handling constants: cst name: type = value
@@ -79,7 +79,7 @@ namespace kafe
             const std::string type;
             NodePtr value;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         // Node handling function: fun name(arg1: A, arg2: B) -> C *body* end
@@ -92,7 +92,7 @@ namespace kafe
             const std::string type;
             NodePtrList body;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         struct Class : public Node
@@ -104,7 +104,7 @@ namespace kafe
             NodePtrList methods;  // should be a vector of function
             NodePtrList attributes;  // should be a vector of definition/declaration
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         /*
@@ -130,7 +130,7 @@ namespace kafe
             NodePtrList elifClause;  // should be a vector of ifclause (acting as elifs)
             NodePtrList elseClause;  // contains the body of the else clause
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         /*
@@ -147,7 +147,7 @@ namespace kafe
             NodePtr condition;
             NodePtrList body;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         struct Integer : public Node
@@ -156,7 +156,7 @@ namespace kafe
 
             const int value;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         struct Float : public Node
@@ -165,7 +165,7 @@ namespace kafe
 
             const float value;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         struct String : public Node
@@ -174,7 +174,7 @@ namespace kafe
 
             const std::string value;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         struct Bool : public Node
@@ -183,7 +183,7 @@ namespace kafe
 
             const bool value;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         struct FunctionCall : public Node
@@ -193,7 +193,7 @@ namespace kafe
             const std::string name;
             NodePtrList arguments;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         struct MethodCall : public Node
@@ -204,14 +204,14 @@ namespace kafe
             const std::string funcname;
             NodePtrList arguments;
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
 
         struct End : public Node
         {
             End();
 
-            virtual std::ostream& toString(std::ostream& os);
+            virtual void toString(std::ostream& os, std::size_t indent);
         };
     }
 }

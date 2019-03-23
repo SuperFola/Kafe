@@ -1,7 +1,63 @@
 (Program
-    (Definition (VarName x) (Type int) (MethodCall (ClassName bar) (FuncName foo) (Args)))
-    (Definition (VarName x) (Type int) (MethodCall (ClassName bar) (FuncName foo) (Args (Integer 1))))
-    (Definition (VarName x) (Type int) (MethodCall (ClassName bar) (FuncName foo) (Args (Integer 1) (Integer -4))))
-    (Definition (VarName x) (Type int) (MethodCall (ClassName bar) (FuncName foo) (Args (FunctionCall (Name test) (Args)))))
-    (Definition (VarName x) (Type int) (MethodCall (ClassName bar) (FuncName foo) (Args (MethodCall (ClassName bar) (FuncName egg) (Args)))))
+    (Definition
+        (VarName x)
+        (Type int)
+        (MethodCall
+            (ClassName bar)
+            (FuncName foo)
+            (Args)
+        )
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (MethodCall
+            (ClassName bar)
+            (FuncName foo)
+            (Args
+                (Integer 1)
+            )
+        )
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (MethodCall
+            (ClassName bar)
+            (FuncName foo)
+            (Args
+                (Integer 1)
+                (Integer -4)
+            )
+        )
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (MethodCall
+            (ClassName bar)
+            (FuncName foo)
+            (Args
+                (FunctionCall
+                    (Name test)
+                    (Args)
+                )
+            )
+        )
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (MethodCall
+            (ClassName bar)
+            (FuncName foo)
+            (Args
+                (MethodCall
+                    (ClassName bar)
+                    (FuncName egg)
+                    (Args)
+                )
+            )
+        )
+    )
 )

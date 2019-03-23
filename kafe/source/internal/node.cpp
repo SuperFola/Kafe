@@ -2,6 +2,14 @@
 
 using namespace kafe::internal;
 
+inline void printIndent(std::ostream& os, std::size_t i)
+{
+    for (std::size_t j=0; j < i; ++j)
+        os << "    ";
+}
+
+// ---------------------------
+
 Node::Node(const std::string& nodename) :
     nodename(nodename)
 {}
@@ -12,16 +20,15 @@ Program::Program() :
     Node("program")
 {}
 
-std::ostream& Program::toString(std::ostream& os)
+void Program::toString(std::ostream& os, std::size_t indent)
 {
     os << "(Program";
     for (auto& node: children)
     {
-        os << "\n    ";
-        node->toString(os);
+        os << "\n";
+        node->toString(os, indent + 1);
     }
     os << "\n)";
-    return os;
 }
 
 // ---------------------------
@@ -31,11 +38,12 @@ Declaration::Declaration(const std::string& varname, const std::string& type) :
     , Node("decl")
 {}
 
-std::ostream& Declaration::toString(std::ostream& os)
+void Declaration::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(Declaration (VarName " << varname << ") (Type "
-        << type << "))";
-    return os;
+    printIndent(os, indent);     os << "(Declaration\n";
+    printIndent(os, indent + 1);     os << "(VarName " << varname << ")\n";
+    printIndent(os, indent + 1);     os << "(Type " << type << ")\n";
+    printIndent(os, indent);     os << ")";
 }
 
 // ---------------------------
@@ -45,16 +53,13 @@ Definition::Definition(const std::string& varname, const std::string& type, Node
     , Node("def")
 {}
 
-std::ostream& Definition::toString(std::ostream& os)
+void Definition::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(Definition (VarName " << varname << ") (Type "
-        << type << ") ";
-    if (value)
-        value->toString(os);
-    else
-        os << "NO VALUE";
-    os << ")";
-    return os;
+    printIndent(os, indent);     os << "(Definition\n";
+    printIndent(os, indent + 1);     os << "(VarName " << varname << ")\n";
+    printIndent(os, indent + 1);     os << "(Type " << type << ")\n";
+                                     value->toString(os, indent + 1); os << "\n";
+    printIndent(os, indent);     os << ")";
 }
 
 // ---------------------------
@@ -64,13 +69,13 @@ ConstDef::ConstDef(const std::string& varname, const std::string& type, NodePtr 
     , Node("const def")
 {}
 
-std::ostream& ConstDef::toString(std::ostream& os)
+void ConstDef::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(ConstDef (VarName " << varname << ") (Type "
-        << type << ") ";
-    value->toString(os);
-    os << ")";
-    return os;
+    printIndent(os, indent);     os << "(ConstDef\n";
+    printIndent(os, indent + 1);     os << "(VarName " << varname << ")\n";
+    printIndent(os, indent + 1);     os << "(Type " << type << ")\n";
+                                     value->toString(os, indent + 1); os << "\n";
+    printIndent(os, indent);     os << ")";
 }
 
 // ---------------------------
@@ -80,22 +85,36 @@ Function::Function(const std::string& name, NodePtrList arguments, const std::st
     , Node("function")
 {}
 
-std::ostream& Function::toString(std::ostream& os)
+void Function::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(Function (Name " << name << ") (Args";
+    printIndent(os, indent);     os << "(Function\n";
+    printIndent(os, indent + 1);     os << "(Name " << name << ")\n";
+    printIndent(os, indent + 1);     os << "(Args";
     for (auto& node: arguments)
     {
-        os << " ";
-        node->toString(os);
+        os << "\n";
+        node->toString(os, indent + 2);
     }
-    os << ") (Type " << type << ") (Body";
+    if (arguments.size() > 0)
+    {
+        os << "\n";
+        printIndent(os, indent + 1);
+    }
+    os << ")\n";
+    printIndent(os, indent + 1);     os << "(Type " << type << ")\n";
+    printIndent(os, indent + 1);     os << "(Body";
     for (auto& node: body)
     {
-        os << " ";
-        node->toString(os);
+        os << "\n";
+        node->toString(os, indent + 2);
     }
-    os << "))";
-    return os;
+    if (body.size() > 0)
+    {
+        os << "\n";
+        printIndent(os, indent + 1);
+    }
+    os << ")\n";
+    printIndent(os, indent);     os << ")";
 }
 
 // ---------------------------
@@ -105,10 +124,9 @@ Class::Class(const std::string& name, NodePtr constructor, NodePtrList methods, 
     , Node("class")
 {}
 
-std::ostream& Class::toString(std::ostream& os)
+void Class::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(Class)";
-    return os;
+    printIndent(os, indent);     os << "(Class)";
 }
 
 // ---------------------------
@@ -118,10 +136,9 @@ IfClause::IfClause(NodePtr condition, NodePtrList body, NodePtrList elifClause, 
     , Node("if")
 {}
 
-std::ostream& IfClause::toString(std::ostream& os)
+void IfClause::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(IfClause)";
-    return os;
+    printIndent(os, indent);     os << "(IfClause)";
 }
 
 // ---------------------------
@@ -131,10 +148,9 @@ WhileLoop::WhileLoop(NodePtr condition, NodePtrList body) :
     , Node("while")
 {}
 
-std::ostream& WhileLoop::toString(std::ostream& os)
+void WhileLoop::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(WhileLoop)";
-    return os;
+    printIndent(os, indent);     os << "(WhileLoop)";
 }
 
 // ---------------------------
@@ -144,10 +160,9 @@ Integer::Integer(int n) :
     , Node("integer")
 {}
 
-std::ostream& Integer::toString(std::ostream& os)
+void Integer::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(Integer " << value << ")";
-    return os;
+    printIndent(os, indent);     os << "(Integer " << value << ")";
 }
 
 // ---------------------------
@@ -157,10 +172,9 @@ Float::Float(float f) :
     , Node("float")
 {}
 
-std::ostream& Float::toString(std::ostream& os)
+void Float::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(Float " << value << ")";
-    return os;
+    printIndent(os, indent);     os << "(Float " << value << ")";
 }
 
 // ---------------------------
@@ -170,10 +184,9 @@ String::String(const std::string& s) :
     , Node("string")
 {}
 
-std::ostream& String::toString(std::ostream& os)
+void String::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(String " << value << ")";
-    return os;
+    printIndent(os, indent);     os << "(String \"" << value << "\")";
 }
 
 // ---------------------------
@@ -183,10 +196,9 @@ Bool::Bool(bool b) :
     , Node("bool")
 {}
 
-std::ostream& Bool::toString(std::ostream& os)
+void Bool::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(Bool " << (value ? "true" : "false") << ")";
-    return os;
+    printIndent(os, indent);     os << "(Bool " << (value ? "true" : "false") << ")";
 }
 
 // ---------------------------
@@ -196,16 +208,23 @@ FunctionCall::FunctionCall(const std::string& name, NodePtrList arguments) :
     , Node("function call")
 {}
 
-std::ostream& FunctionCall::toString(std::ostream& os)
+void FunctionCall::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(FunctionCall (Name " << name << ") (Args";
+    printIndent(os, indent);     os << "(FunctionCall\n";
+    printIndent(os, indent + 1);     os << "(Name " << name << ")\n";
+    printIndent(os, indent + 1);     os << "(Args";
     for (auto& node: arguments)
     {
-        os << " ";
-        node->toString(os);
+        os << "\n";
+        node->toString(os, indent + 2);
     }
-    os << "))";
-    return os;
+    if (arguments.size() > 0)
+    {
+        os << "\n";
+        printIndent(os, indent + 1);
+    }
+    os << ")\n";
+    printIndent(os, indent);     os << ")";
 }
 
 // ---------------------------
@@ -215,17 +234,24 @@ MethodCall::MethodCall(const std::string& classname, const std::string& funcname
     , Node ("method call")
 {}
 
-std::ostream& MethodCall::toString(std::ostream& os)
+void MethodCall::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(MethodCall (ClassName " << classname << ") ";
-    os << "(FuncName " << funcname << ") (Args";
+    printIndent(os, indent);     os << "(MethodCall\n";
+    printIndent(os, indent + 1);     os << "(ClassName " << classname << ")\n";
+    printIndent(os, indent + 1);     os << "(FuncName " << funcname << ")\n";
+    printIndent(os, indent + 1);     os << "(Args";
     for (auto& node: arguments)
     {
-        os << " ";
-        node->toString(os);
+        os << "\n";
+        node->toString(os, indent + 2);
     }
-    os << "))";
-    return os;
+    if (arguments.size() > 0)
+    {
+        os << "\n";
+        printIndent(os, indent + 1);
+    }
+    os << ")\n";
+    printIndent(os, indent);     os << ")";
 }
 
 // ---------------------------
@@ -234,8 +260,7 @@ End::End() :
     Node("end")
 {}
 
-std::ostream& End::toString(std::ostream& os)
+void End::toString(std::ostream& os, std::size_t indent)
 {
-    os << "(End)";
-    return os;
+    printIndent(os, indent);     os << "(End)";
 }
