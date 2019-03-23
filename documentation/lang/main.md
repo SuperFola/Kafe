@@ -15,3 +15,12 @@ x : int  // this is a declaration
 x2 : string = "hello"  // this is a definition
 cst x3 : bool = false  // this is a constant
 ```
+
+## Function calls
+
+Function calls as instructions aren't accepted, only as expressions:
+
+```
+foo(1)  // won't work, ParseError
+x: int = foo(1)  // no problem
+```
