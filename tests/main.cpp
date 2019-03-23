@@ -8,7 +8,8 @@
 
 int main()
 {
-    std::cout << "Kafe tests" << std::endl;
+    std::cout << "Kafe tests" << "\n"
+              << "==========" << "\n" << std::endl;
 
     // getting all the tests in the directory kafe/
     std::vector<std::string> v;

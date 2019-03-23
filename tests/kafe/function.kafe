@@ -6,3 +6,7 @@ fun bis(x: int) -> int
     y: int = 12
     z: string = "test aya"
 end
+
+fun ter(x: int, a: string) -> int
+    x: int = 10
+end

@@ -316,6 +316,10 @@ MaybeNodePtr Parser::parseFunction()
             arguments.push_back(
                 std::make_shared<Declaration>(varname, type)
             );
+
+            // check for ',' -> other arguments
+            if (accept(IsChar(',')))
+                continue;
         }
     }
 
