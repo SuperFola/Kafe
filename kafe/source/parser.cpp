@@ -61,9 +61,15 @@ MaybeNodePtr Parser::parseInstruction()
         back(getCount() - current + 1);
     
 
-    // should be the last one of the list
+    // function/method calls as expression, not as instruction!
+    // FunctionCall and MethodCall should be the last ones of the list
     if (auto inst = parseFunctionCall())
         error("Function calls as instructions are forbidden", "");
+    else
+        back(getCount() - current + 1);
+    
+    if (auto inst = parseMethodCall())
+        error("Method calls as instructions are forbidden", "");
     else
         back(getCount() - current + 1);
     
@@ -193,8 +199,13 @@ MaybeNodePtr Parser::parseExp()
         return exp;
     else
         back(getCount() - current + 1);
+    
+    if (auto exp = parseMethodCall())  // bar.foo(42, -6.66)
+        return exp;
+    else
+        back(getCount() - current + 1);
 
-    error("Couldn't parse expression", "???");
+    error("Couldn't parse expression", "");
 }
 
 MaybeNodePtr Parser::parseInt()
