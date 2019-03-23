@@ -1,0 +1,5 @@
+x: int = bar.foo()
+x: int = bar.foo(1)
+x: int = bar.foo(1, -4)
+x: int = bar.foo(test())
+x: int = bar.foo(bar.egg())
