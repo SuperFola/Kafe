@@ -210,6 +210,26 @@ std::ostream& FunctionCall::toString(std::ostream& os)
 
 // ---------------------------
 
+MethodCall::MethodCall(const std::string& classname, const std::string& funcname, NodePtrList arguments) :
+    classname(classname), funcname(funcname), arguments(std::move(arguments))
+    , Node ("method call")
+{}
+
+std::ostream& MethodCall::toString(std::ostream& os)
+{
+    os << "(MethodCall (ClassName " << classname << ") ";
+    os << "(FuncName " << funcname << ") (Args";
+    for (auto& node: arguments)
+    {
+        os << " ";
+        node->toString(os);
+    }
+    os << "))";
+    return os;
+}
+
+// ---------------------------
+
 End::End() :
     Node("end")
 {}

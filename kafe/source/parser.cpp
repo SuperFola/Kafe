@@ -294,6 +294,62 @@ MaybeNodePtr Parser::parseFunctionCall()
     return {};
 }
 
+MaybeNodePtr Parser::parseMethodCall()
+{
+    /*
+        Trying to parse stuff like this:
+
+        object.main(1, "hello")
+        player.foo(true)
+        you.doStuff()
+    */
+
+    space();
+
+    // getting the name of the object
+    std::string objectname = "";
+    if (!name(&objectname))
+        return {};
+    
+    if (!accept(IsChar('.')))  // '.' between object name and method name
+        return {};
+    
+    // getting function name
+    std::string funcname = "";
+    if (!name(&funcname))
+        error("Expecting a method name after '" + objectname + ".'", funcname);
+    
+    space();
+    
+    // getting the arguments
+    NodePtrList arguments;
+    if (accept(IsChar('(')))
+    {
+        while (true)
+        {
+            // eat the trailing white space
+            space();
+
+            // check if end of arguments
+            if (accept(IsChar(')')))
+                break;
+
+            // find argument
+            MaybeNodePtr inst = parseExp();  // throw an error if it couldn't
+            arguments.push_back(inst.value());
+
+            space();
+
+            // check for ',' -> other arguments
+            if (accept(IsChar(',')))
+                continue;
+        }
+
+        return std::make_shared<MethodCall>(objectname, funcname, arguments);
+    }
+    return {};
+}
+
 MaybeNodePtr Parser::parseEnd()
 {
     /*
