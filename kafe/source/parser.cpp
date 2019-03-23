@@ -54,6 +54,12 @@ MaybeNodePtr Parser::parseInstruction()
     else
         back(getCount() - current + 1);
     
+    // class Name ... end
+    if (auto inst = parseClass())
+        return inst;
+    else
+        back(getCount() - current + 1);
+    
     // token 'end' closing a block
     if (auto inst = parseEnd())
         return inst;
@@ -478,4 +484,28 @@ MaybeNodePtr Parser::parseFunction()
     }
 
     return std::make_shared<Function>(funcname, arguments, type, body);
+}
+
+MaybeNodePtr Parser::parseClass()
+{
+    /*
+        Trying to parse class definition:
+
+        class Name
+            // only one constructor!
+            Name(arg: type, ...)
+                ...  // no ret here!
+            end
+
+            fun method(arg: type, ...) -> ret_type
+                ...
+                ret object_of_type_ret_type
+            end
+
+            variable: type
+            variable: type = value
+        end
+    */
+
+    return {};
 }
