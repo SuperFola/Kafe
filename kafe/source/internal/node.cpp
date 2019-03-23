@@ -191,6 +191,25 @@ std::ostream& Bool::toString(std::ostream& os)
 
 // ---------------------------
 
+FunctionCall::FunctionCall(const std::string& name, NodePtrList arguments) :
+    name(name), arguments(std::move(arguments))
+    , Node("function call")
+{}
+
+std::ostream& FunctionCall::toString(std::ostream& os)
+{
+    os << "(FunctionCall (Name " << name << ") (Args";
+    for (auto& node: arguments)
+    {
+        os << " ";
+        node->toString(os);
+    }
+    os << "))";
+    return os;
+}
+
+// ---------------------------
+
 End::End() :
     Node("end")
 {}

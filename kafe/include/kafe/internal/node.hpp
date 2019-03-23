@@ -186,6 +186,16 @@ namespace kafe
             virtual std::ostream& toString(std::ostream& os);
         };
 
+        struct FunctionCall : public Node
+        {
+            FunctionCall(const std::string& name, NodePtrList arguments);
+
+            const std::string name;
+            NodePtrList arguments;
+
+            virtual std::ostream& toString(std::ostream& os);
+        };
+
         struct End : public Node
         {
             End();

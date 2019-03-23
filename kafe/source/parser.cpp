@@ -235,6 +235,59 @@ MaybeNodePtr Parser::parseBool()
     return {};
 }
 
+MaybeNodePtr Parser::parseFunctionCall()
+{
+    /*
+        Trying to parse stuff like this:
+
+        main(1, "hello")
+        foo(true)
+        doStuff()
+    */
+
+    space();
+
+    // getting the name of the function
+    std::string name = "";
+    if (!name(&name))
+        return {};
+    
+    // getting the arguments
+    NodePtrList arguments;
+    if (accept(IsChar('(')))
+    {
+        while (true)
+        {
+            // eat the trailing white space
+            space();
+
+            // check if end of arguments
+            if (accept(IsChar(')')))
+                break;
+
+            // find argument
+            // after getting the instruction, check if it's valid
+            if (auto inst = parseInstruction())
+                body.push_back(inst.value());
+            else
+                return {};
+            
+            space();
+
+            // register argument
+            arguments.push_back(
+                std::make_shared<Declaration>(varname, type)
+            );
+
+            // check for ',' -> other arguments
+            if (accept(IsChar(',')))
+                continue;
+        }
+
+        return std::make_shared<FunctionCall>(name, arguments);
+    }
+}
+
 MaybeNodePtr Parser::parseEnd()
 {
     /*
