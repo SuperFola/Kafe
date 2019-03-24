@@ -180,6 +180,17 @@ MaybeNodePtr Parser::parseExp()
 
     auto current = getCount();
 
+    // parsing operations before anything else because it must use the other parsers
+    if (auto exp = parseOperation())
+        return exp;
+    else
+        back(getCount() - current + 1);
+    
+    if (auto exp = parseVarUse())  // varname
+        return exp;
+    else
+        back(getCount() - current + 1);
+
     // parsing float before integer because float requires a '.'
     if (auto exp = parseFloat())  // 1.5
         return exp;
@@ -212,6 +223,33 @@ MaybeNodePtr Parser::parseExp()
         back(getCount() - current + 1);
 
     error("Couldn't parse expression", "");
+}
+
+MaybeNodePtr Parser::parseOperation()
+{
+    /*
+        Trying to parse operations such as
+        1 + 2
+        1 / (2 + 3)
+    */
+
+    return {};
+}
+
+MaybeNodePtr Parser::parseVarUse()
+{
+    /*
+        Trying to parse things such as
+
+        x: int = varname
+        ~~~~~~~~~^^^^^^^
+    */
+
+    std::string varname = "";
+    if (!name(&varname))
+        return {};
+    
+    return std::make_shared<VarUse>(varname);
 }
 
 MaybeNodePtr Parser::parseInt()

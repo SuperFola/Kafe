@@ -28,6 +28,8 @@ namespace kafe
         MaybeNodePtr parseDeclaration();
         MaybeNodePtr parseConstDef();
         MaybeNodePtr parseExp();
+            MaybeNodePtr parseOperation();
+            MaybeNodePtr parseVarUse();
             MaybeNodePtr parseInt();
             MaybeNodePtr parseFloat();
             MaybeNodePtr parseString();

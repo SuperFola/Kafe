@@ -203,6 +203,18 @@ void Bool::toString(std::ostream& os, std::size_t indent)
 
 // ---------------------------
 
+VarUse::VarUse(const std::string& name) :
+    name(name)
+    , Node("var use")
+{}
+
+void VarUse::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(VarUse " << name << ")";
+}
+
+// ---------------------------
+
 FunctionCall::FunctionCall(const std::string& name, NodePtrList arguments) :
     name(name), arguments(std::move(arguments))
     , Node("function call")

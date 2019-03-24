@@ -186,6 +186,15 @@ namespace kafe
             virtual void toString(std::ostream& os, std::size_t indent);
         };
 
+        struct VarUse : public Node
+        {
+            VarUse(const std::string& name);
+
+            const std::string name;
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
         struct FunctionCall : public Node
         {
             FunctionCall(const std::string& name, NodePtrList arguments);
