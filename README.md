@@ -10,7 +10,7 @@ This language is aiming video games, and was created to replace Lua, which lacks
 
 ```
 cls Player
-    # constructor, must be unique
+    // constructor, must be unique
     Player(x: int, y: int, name: string)
         m_x = x
         m_y = y
@@ -25,7 +25,7 @@ cls Player
         ret format("%s says hi to %s", m_name, other.getName())
     end
 
-    # all the variables in a class are automatically private
+    // all the variables in a class are automatically private
     m_x: int
     m_y: int
     m_name: string
