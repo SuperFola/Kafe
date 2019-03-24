@@ -223,6 +223,8 @@ MaybeNodePtr Parser::parseOperation()
         Parsing end when:
             - the expression couldn't be parsed (VarUse being a keyword can break the whole thing)
             - there was no error and we found the matching ')'
+        
+        TODO This parser should also do a "shunting yard"
     */
 
     space();
