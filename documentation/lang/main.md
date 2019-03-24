@@ -44,3 +44,31 @@ Function calls as instructions aren't accepted, only as expressions:
 foo(1)  // won't work, ParseError
 x: int = foo(1)  // no problem
 ```
+
+The same applies to method calls.
+
+## Classes
+
+A class can must only one constructor.
+
+```
+cls Name
+    Name(x: int)  // ok
+        stuff...
+    end
+
+    fun test() -> int
+        ret 1
+    end
+end
+
+cls Test
+    Test()
+        stuff...
+    end
+
+    Test(x: int)  // won't work, ParseError
+        stuff...
+    end
+end
+```
