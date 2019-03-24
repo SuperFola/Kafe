@@ -64,6 +64,9 @@ int main()
         {
             ++failed;
             std::cout << "Test '" << file << "' (" << i << ") failed" << std::endl;
+            std::cout << os.str() << std::endl;
+            std::cout << "===========================" << std::endl;
+            std::cout << content << std::endl;
         }
         
         ++i;

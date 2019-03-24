@@ -1,0 +1,41 @@
+(Program
+    (Definition
+        (VarName x)
+        (Type int)
+        (OperationsList
+            (Integer 1)
+            (Operator +)
+            (Integer 1)
+        )
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (Integer 2)
+    )
+    (Definition
+        (VarName x)
+        (Type int)
+        (OperationsList
+            (Integer 2)
+            (Operator *)
+            (Integer 4)
+            (Operator -)
+            (Integer 5)
+            (Operator +)
+            (VarUse x)
+        )
+    )
+    (Function
+        (Name main)
+        (Args)
+        (Type int)
+        (Body
+            (Definition
+                (VarName x)
+                (Type int)
+                (Integer 10)
+            )
+        )
+    )
+)

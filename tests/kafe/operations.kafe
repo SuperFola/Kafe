@@ -1,0 +1,6 @@
+x: int = 1 + 1
+x: int = 2
+x: int = 2 * 4 - 5 + x
+fun main() -> int
+    x : int = 10
+end

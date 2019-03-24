@@ -125,10 +125,13 @@ MaybeNodePtr Parser::parseDeclaration()
     {
         space();
 
-        // throw an exception if it couldn't
-        MaybeNodePtr exp = parseExp();
-        return std::make_shared<Definition>(varname, type, exp.value());
+        if (auto exp = parseExp())
+            return std::make_shared<Definition>(varname, type, exp.value());
+        else
+            error("Expected a valid expression for definition", "");
     }
+
+    return {};
 }
 
 MaybeNodePtr Parser::parseConstDef()
@@ -169,9 +172,12 @@ MaybeNodePtr Parser::parseConstDef()
     except(IsChar('='));
     space();
     
-    // throw an exception if it couldn't
-    MaybeNodePtr exp = parseExp();
-    return std::make_shared<ConstDef>(varname, type, exp.value());
+    if (auto exp = parseExp())
+        return std::make_shared<ConstDef>(varname, type, exp.value());
+    else
+        error("Expected a valid expression as a value for constant definition", "");
+    
+    return {};
 }
 
 MaybeNodePtr Parser::parseExp()
@@ -201,8 +207,7 @@ MaybeNodePtr Parser::parseExp()
     else
         back(getCount() - current + 1);
 
-    error("Couldn't parse expression", "");
-    return {};  // to avoid warnings
+    return {};
 }
 
 MaybeNodePtr Parser::parseOperation()
@@ -228,9 +233,6 @@ MaybeNodePtr Parser::parseOperation()
     */
 
     space();
-
-    if (!accept(IsChar('(')))
-        return {};
     
     // parse expressions
     NodePtrList operations;
@@ -238,13 +240,9 @@ MaybeNodePtr Parser::parseOperation()
     {
         space();
 
-        // check for end of operation
-        if (accept(IsChar(')')))
-            break;
-
         // getting prefix operator
         auto current = getCount();
-        if (accept(IsMinus))
+        if (accept(IsMinus) && accept(IsSpace))
             operations.push_back(std::make_shared<Operator>("-"));
         else
             back(getCount() - current + 1);
@@ -260,27 +258,39 @@ MaybeNodePtr Parser::parseOperation()
         else
             back(getCount() - current + 1);
         
+        space();
+        
         // get operand
-        MaybeNodePtr exp = parseExp();  // throw an error if it couldn't
-        operations.push_back(exp.value());
-
-        // check for end of operation
-        if (accept(IsChar(')')))
+        current = getCount();
+        if (auto exp = parseSingleExp())
+            operations.push_back(exp.value());
+        else
+        {
+            std::cout << "???" << std::endl;
+            back(getCount() - current + 1);
             break;
+        }
         
         space();
 
+        current = getCount();
         std::string op = "";
         if (!operator_(&op))
             return {};
         if (!isOperator(op))
-            return {};
+        {
+            if (operations.size() < 2)
+                return {};
+            
+            back(getCount() - current + 1);
+            break;
+        }
         
         operations.push_back(std::make_shared<Operator>(op));
     }
 
     if (operations.size() == 0)
-        error("Expected operations inside block", "");
+        return {};
 
     return std::make_shared<OperationsList>(operations);
 }
@@ -413,8 +423,10 @@ MaybeNodePtr Parser::parseFunctionCall()
                 break;
 
             // find argument
-            MaybeNodePtr inst = parseExp();  // throw an error if it couldn't
-            arguments.push_back(inst.value());
+            if (auto inst = parseExp())
+                arguments.push_back(inst.value());
+            else
+                error("Expected a valid expression as function argument", "");
 
             space();
 
@@ -469,8 +481,10 @@ MaybeNodePtr Parser::parseMethodCall()
                 break;
 
             // find argument
-            MaybeNodePtr inst = parseExp();  // throw an error if it couldn't
-            arguments.push_back(inst.value());
+            if (auto inst = parseExp())
+                arguments.push_back(inst.value());
+            else
+                error("Expected a valid expression as method argument", "");
 
             space();
 
