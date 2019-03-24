@@ -172,10 +172,10 @@ MaybeNodePtr Parser::parseExp()
         - floats
         - strings
         - booleans
-        - TODO function call
+        - function call
         - TODO class instanciation
-        - TODO method call
-        - TODO operations (comparisons, additions...)
+        - method call
+        - operations (comparisons, additions...)
     */
 
     auto current = getCount();
@@ -185,12 +185,52 @@ MaybeNodePtr Parser::parseExp()
         return exp;
     else
         back(getCount() - current + 1);
-    
-    if (auto exp = parseVarUse())  // varname
+
+    if (auto exp == parseSingleExp())
         return exp;
     else
         back(getCount() - current + 1);
 
+    error("Couldn't parse expression", "");
+}
+
+MaybeNodePtr Parser::parseOperation()
+{
+    /*
+        Trying to parse operations such as
+        1 + 2
+        1 / (2 + 3)
+    */
+
+    /*
+        Get current token: it must be a '('
+        If it's not => quit
+        Otherwise, get token[n+1], it must an expression
+        Token[n+2] must be an operator:
+            +, -, *, /
+            <<, >>, ~
+            and, or, not
+            ==, !=, <, <=, >, >=
+        Parsing end when:
+            - the expression couldn't be parsed (VarUse being a keyword can break the whole thing)
+            - there was no error and we found the matching ')'
+    */
+
+    if (!accept(IsChar('(')))
+        return {};
+    
+    // parse expressions
+    NodePtrList operations;
+    while (true)
+    {
+        space();
+    }
+
+    return {};
+}
+
+MaybeNodePtr Parser::parseSingleExp()
+{
     // parsing float before integer because float requires a '.'
     if (auto exp = parseFloat())  // 1.5
         return exp;
@@ -212,6 +252,11 @@ MaybeNodePtr Parser::parseExp()
     else
         back(getCount() - current + 1);
     
+    if (auto exp = parseVarUse())  // varname
+        return exp;
+    else
+        back(getCount() - current + 1);
+    
     if (auto exp = parseFunctionCall())  // foo(42, -6.66)
         return exp;
     else
@@ -221,35 +266,8 @@ MaybeNodePtr Parser::parseExp()
         return exp;
     else
         back(getCount() - current + 1);
-
-    error("Couldn't parse expression", "");
-}
-
-MaybeNodePtr Parser::parseOperation()
-{
-    /*
-        Trying to parse operations such as
-        1 + 2
-        1 / (2 + 3)
-    */
-
-    return {};
-}
-
-MaybeNodePtr Parser::parseVarUse()
-{
-    /*
-        Trying to parse things such as
-
-        x: int = varname
-        ~~~~~~~~~^^^^^^^
-    */
-
-    std::string varname = "";
-    if (!name(&varname))
-        return {};
     
-    return std::make_shared<VarUse>(varname);
+    error("Couldn't parse single expression", "");
 }
 
 MaybeNodePtr Parser::parseInt()
@@ -299,6 +317,26 @@ MaybeNodePtr Parser::parseBool()
         return std::make_shared<Bool>(true);
     
     return {};
+}
+
+MaybeNodePtr Parser::parseVarUse()
+{
+    /*
+        Trying to parse things such as
+
+        x: int = varname
+        ~~~~~~~~~^^^^^^^
+    */
+
+    std::string varname = "";
+    if (!name(&varname))
+        return {};
+    
+    // checking if varname is a keyword
+    if (isKeyword(varname))
+        return {};
+    
+    return std::make_shared<VarUse>(varname);
 }
 
 MaybeNodePtr Parser::parseFunctionCall()
