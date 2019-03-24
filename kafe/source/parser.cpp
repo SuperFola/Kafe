@@ -307,11 +307,7 @@ MaybeNodePtr Parser::parseSingleExp()
         return exp;
     else
         back(getCount() - current + 1);
-    
-    if (auto exp = parseVarUse())  // varname
-        return exp;
-    else
-        back(getCount() - current + 1);
+
     
     if (auto exp = parseFunctionCall())  // foo(42, -6.66)
         return exp;
@@ -319,6 +315,12 @@ MaybeNodePtr Parser::parseSingleExp()
         back(getCount() - current + 1);
     
     if (auto exp = parseMethodCall())  // bar.foo(42, -6.66)
+        return exp;
+    else
+        back(getCount() - current + 1);
+    
+    // must the last one, otherwise it would try to parse function/method calls
+    if (auto exp = parseVarUse())  // varname
         return exp;
     else
         back(getCount() - current + 1);
@@ -374,26 +376,6 @@ MaybeNodePtr Parser::parseBool()
         return std::make_shared<Bool>(true);
     
     return {};
-}
-
-MaybeNodePtr Parser::parseVarUse()
-{
-    /*
-        Trying to parse things such as
-
-        x: int = varname
-        ~~~~~~~~~^^^^^^^
-    */
-
-    std::string varname = "";
-    if (!name(&varname))
-        return {};
-    
-    // checking if varname is a keyword
-    if (isKeyword(varname))
-        return {};
-    
-    return std::make_shared<VarUse>(varname);
 }
 
 MaybeNodePtr Parser::parseFunctionCall()
@@ -498,6 +480,26 @@ MaybeNodePtr Parser::parseMethodCall()
         return std::make_shared<MethodCall>(objectname, funcname, arguments);
     }
     return {};
+}
+
+MaybeNodePtr Parser::parseVarUse()
+{
+    /*
+        Trying to parse things such as
+
+        x: int = varname
+        ~~~~~~~~~^^^^^^^
+    */
+
+    std::string varname = "";
+    if (!name(&varname))
+        return {};
+    
+    // checking if varname is a keyword
+    if (isKeyword(varname))
+        return {};
+    
+    return std::make_shared<VarUse>(varname);
 }
 
 MaybeNodePtr Parser::parseEnd()
