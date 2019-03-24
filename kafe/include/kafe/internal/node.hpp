@@ -195,6 +195,24 @@ namespace kafe
             virtual void toString(std::ostream& os, std::size_t indent);
         };
 
+        struct Operator : public Node
+        {
+            Operator(const std::string& name);
+
+            const std::string name;
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
+        struct OperationsList : public Node
+        {
+            OperationsList(NodePtrList operations);
+
+            NodePtrList operations;
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
         struct FunctionCall : public Node
         {
             FunctionCall(const std::string& name, NodePtrList arguments);

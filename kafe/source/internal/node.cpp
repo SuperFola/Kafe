@@ -215,6 +215,38 @@ void VarUse::toString(std::ostream& os, std::size_t indent)
 
 // ---------------------------
 
+Operator::Operator(const std::string& name) :
+    name(name)
+    , Node("operator")
+{}
+
+void Operator::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(Operator " << name << ")";
+}
+
+// ---------------------------
+
+OperationsList::OperationsList(NodePtrList operations) :
+    operations(std::move(operations))
+    , Node("op list")
+{}
+
+void OperationsList::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(OperationsList";
+    for (auto& node: operations)
+    {
+        os << "\n";
+        node->toString(os, indent + 1);
+    }
+    if (operations.size() > 0)
+        os << "\n";
+    printIndent(os, indent);     os << ")";
+}
+
+// ---------------------------
+
 FunctionCall::FunctionCall(const std::string& name, NodePtrList arguments) :
     name(name), arguments(std::move(arguments))
     , Node("function call")

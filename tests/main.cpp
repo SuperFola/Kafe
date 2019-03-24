@@ -6,6 +6,19 @@
 #include <filesystem>
 #include <string>
 
+void handleParseErrors(kafe::Parser& p)
+{
+    try
+    {
+        p.parse();
+    }
+    catch (const kafe::internal::ParseError& e)
+    {
+        std::cout << "ParseError: " << e.what() << " " << e.exp << std::endl;
+        std::cout << "At " << ((char) e.sym) << " @ " << e.row << ":" << e.col << std::endl;
+    }
+}
+
 int main()
 {
     std::cout << "Kafe tests" << "\n"
@@ -13,8 +26,8 @@ int main()
 
     // getting all the tests in the directory kafe/
     std::vector<std::string> v;
-    std::filesystem::path p("./kafe/");
-    std::filesystem::directory_iterator start(p);
+    std::filesystem::path path("./kafe/");
+    std::filesystem::directory_iterator start(path);
     std::filesystem::directory_iterator end;
     std::transform(start, end, std::back_inserter(v), path_leaf_string());
 
@@ -36,15 +49,7 @@ int main()
     {
         // parsing
         kafe::Parser p(readFile(file));
-        try
-        {
-            p.parse();
-        }
-        catch (const kafe::internal::ParseError& e)
-        {
-            std::cout << "ParseError: " << e.what() << " " << e.exp << std::endl;
-            std::cout << "At " << ((char) e.sym) << " @ " << e.row << ":" << e.col << std::endl;
-        }
+        handleParseErrors(p);
 
         // getting AST
         std::ostringstream os;

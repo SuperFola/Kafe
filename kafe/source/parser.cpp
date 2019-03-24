@@ -31,6 +31,16 @@ void Parser::ASTtoString(std::ostream& os)
     m_program.toString(os, /* default indentation level */ 0);
 }
 
+bool Parser::operator_(std::string* s)
+{
+    if (accept(IsNot(IsChar(' ')), s))
+    {
+        while (accept(IsNot(IsChar(' ')), s));
+        return true;
+    }
+    return false;
+}
+
 MaybeNodePtr Parser::parseInstruction()
 {
     // save current position in buffer to be able to go back if needed
@@ -99,7 +109,7 @@ MaybeNodePtr Parser::parseDeclaration()
     
     space();
     // : after varname and before type is mandatory
-    if (!accept(internal::IsChar(':')))
+    if (!accept(IsChar(':')))
         return {};
     space();
 
@@ -109,7 +119,7 @@ MaybeNodePtr Parser::parseDeclaration()
     
     space();
     // checking for value (optional)
-    if (!accept(internal::IsChar('=')))
+    if (!accept(IsChar('=')))
         return std::make_shared<Declaration>(varname, type);
     else
     {
@@ -147,7 +157,7 @@ MaybeNodePtr Parser::parseConstDef()
     
     space();
     // : after varname and before type is mandatory
-    except(internal::IsChar(':'));
+    except(IsChar(':'));
     space();
 
     std::string type = "";
@@ -156,7 +166,7 @@ MaybeNodePtr Parser::parseConstDef()
     
     space();
     // checking for value
-    except(internal::IsChar('='));
+    except(IsChar('='));
     space();
     
     // throw an exception if it couldn't
@@ -186,23 +196,22 @@ MaybeNodePtr Parser::parseExp()
     else
         back(getCount() - current + 1);
 
-    if (auto exp == parseSingleExp())
+    if (auto exp = parseSingleExp())
         return exp;
     else
         back(getCount() - current + 1);
 
     error("Couldn't parse expression", "");
+    return {};  // to avoid warnings
 }
 
 MaybeNodePtr Parser::parseOperation()
 {
     /*
         Trying to parse operations such as
-        1 + 2
-        1 / (2 + 3)
-    */
+        (1 + 2)
+        (1 / (2 + 3))
 
-    /*
         Get current token: it must be a '('
         If it's not => quit
         Otherwise, get token[n+1], it must an expression
@@ -216,6 +225,8 @@ MaybeNodePtr Parser::parseOperation()
             - there was no error and we found the matching ')'
     */
 
+    space();
+
     if (!accept(IsChar('(')))
         return {};
     
@@ -224,13 +235,58 @@ MaybeNodePtr Parser::parseOperation()
     while (true)
     {
         space();
+
+        // check for end of operation
+        if (accept(IsChar(')')))
+            break;
+
+        // getting prefix operator
+        auto current = getCount();
+        if (accept(IsMinus))
+            operations.push_back(std::make_shared<Operator>("-"));
+        else
+            back(getCount() - current + 1);
+        
+        if (accept(IsChar('~')))
+            operations.push_back(std::make_shared<Operator>("~"));
+        else
+            back(getCount() - current + 1);
+        
+        std::string token = "";
+        if (name(&token) && token == "not")
+            operations.push_back(std::make_shared<Operator>("not"));
+        else
+            back(getCount() - current + 1);
+        
+        // get operand
+        MaybeNodePtr exp = parseExp();  // throw an error if it couldn't
+        operations.push_back(exp.value());
+
+        // check for end of operation
+        if (accept(IsChar(')')))
+            break;
+        
+        space();
+
+        std::string op = "";
+        if (!operator_(&op))
+            return {};
+        if (!isOperator(op))
+            return {};
+        
+        operations.push_back(std::make_shared<Operator>(op));
     }
 
-    return {};
+    if (operations.size() == 0)
+        error("Expected operations inside block", "");
+
+    return std::make_shared<OperationsList>(operations);
 }
 
 MaybeNodePtr Parser::parseSingleExp()
 {
+    auto current = getCount();
+
     // parsing float before integer because float requires a '.'
     if (auto exp = parseFloat())  // 1.5
         return exp;
@@ -268,6 +324,7 @@ MaybeNodePtr Parser::parseSingleExp()
         back(getCount() - current + 1);
     
     error("Couldn't parse single expression", "");
+    return {};  // to avoid warnings
 }
 
 MaybeNodePtr Parser::parseInt()
@@ -510,7 +567,7 @@ MaybeNodePtr Parser::parseFunction()
             
             space();
             // : after varname and before type is mandatory
-            if (!except(internal::IsChar(':')))
+            if (!except(IsChar(':')))
                 error("Expected ':' after argument name and before type name", "");
             space();
 

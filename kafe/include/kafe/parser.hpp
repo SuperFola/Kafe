@@ -34,6 +34,20 @@ namespace kafe
                     name == "false" || name == "ret");
         }
 
+        inline bool isOperator(const std::string& name)
+        {
+            return (name == "+" || name == "-" ||
+                    name == "*" || name == "/" ||
+                    name == "<<" || name == "<<" ||
+                    name == "~" || name == "and" ||
+                    name == "or" || name == "not" ||
+                    name == "==" || name == "!=" ||
+                    name == "<" || name == ">" ||
+                    name == "<=" || name == ">=");
+        }
+
+        bool operator_(std::string* s=nullptr);
+
         // parsers
         MaybeNodePtr parseInstruction();
         MaybeNodePtr parseDeclaration();
