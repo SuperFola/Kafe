@@ -84,10 +84,11 @@ namespace kafe
 
         struct Assignment : public Node
         {
-            Assignment(const std::string& varname, NodePtr value);
+            Assignment(const std::string& varname, NodePtr value, const std::string& op);
 
             const std::string varname;
             NodePtr value;
+            const std::string op;
 
             virtual void toString(std::ostream& os, std::size_t indent);
         };
@@ -269,6 +270,16 @@ namespace kafe
         struct End : public Node
         {
             End();
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
+        // ret expression
+        struct Ret : public Node
+        {
+            Ret(NodePtr value);
+
+            NodePtr value;
 
             virtual void toString(std::ostream& os, std::size_t indent);
         };

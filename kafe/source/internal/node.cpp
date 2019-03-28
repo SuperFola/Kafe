@@ -80,8 +80,8 @@ void ConstDef::toString(std::ostream& os, std::size_t indent)
 
 // ---------------------------
 
-Assignment::Assignment(const std::string& varname, NodePtr value) :
-    varname(varname), value(std::move(value))
+Assignment::Assignment(const std::string& varname, NodePtr value, const std::string& op) :
+    varname(varname), value(std::move(value)), op(op)
     , Node("assignment")
 {}
 
@@ -89,6 +89,7 @@ void Assignment::toString(std::ostream& os, std::size_t indent)
 {
     printIndent(os, indent);     os << "(Assignment\n";
     printIndent(os, indent + 1);     os << "(VarName " << varname << ")\n";
+    printIndent(os, indent + 1);     os << op << "\n";
                                      value->toString(os, indent + 1); os << "\n";
     printIndent(os, indent);     os << ")";
 }
@@ -143,7 +144,7 @@ void Class::toString(std::ostream& os, std::size_t indent)
 {
     printIndent(os, indent);     os << "(Class\n";
     printIndent(os, indent + 1);     os << "(Name " << name << ")\n";
-    constructor->toString(os, indent + 1);
+    constructor->toString(os, indent + 1); os << "\n";
     printIndent(os, indent + 1);     os << "(Body";
     for (auto& node: body)
     {
@@ -365,7 +366,7 @@ void ClsConstructor::toString(std::ostream& os, std::size_t indent)
 {
     printIndent(os, indent);     os << "(ClassConstructor\n";
     printIndent(os, indent + 1);     os << "(Name " << name << ")\n";
-    printIndent(os, indent + 1);     os << "(Arguments";
+    printIndent(os, indent + 1);     os << "(Args";
     for (auto& node: arguments)
     {
         os << "\n";
@@ -401,4 +402,19 @@ End::End() :
 void End::toString(std::ostream& os, std::size_t indent)
 {
     printIndent(os, indent);     os << "(End)";
+}
+
+// ---------------------------
+
+Ret::Ret(NodePtr value) :
+    value(std::move(value))
+    , Node("ret")
+{}
+
+void Ret::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(Ret\n";
+    value->toString(os, indent + 1);
+    os << "\n";
+    printIndent(os, indent);     os << ")";
 }

@@ -58,14 +58,32 @@ MaybeNodePtr Parser::parseInstruction()
     else
         back(getCount() - current + 1);
     
+    // x = value
+    if (auto inst = parseAssignment())
+        return inst;
+    else
+        back(getCount() - current + 1);
+    
     // fun name(arg:type, ...) -> type {body} end
     if (auto inst = parseFunction())
         return inst;
     else
         back(getCount() - current + 1);
     
-    // class Name ... end
+    // cls Name ... end
     if (auto inst = parseClass())
+        return inst;
+    else
+        back(getCount() - current + 1);
+    
+    // new Name() ... end
+    if (auto inst = parseConstructor())
+        return inst;
+    else
+        back(getCount() - current + 1);
+    
+    // ret value
+    if (auto inst = parseRet())
         return inst;
     else
         back(getCount() - current + 1);
@@ -170,6 +188,47 @@ MaybeNodePtr Parser::parseConstDef()
         return std::make_shared<ConstDef>(varname, type, exp.value());
     else
         error("Expected a valid expression as a value for constant definition", "");
+    
+    return {};
+}
+
+MaybeNodePtr Parser::parseAssignment()
+{
+    /*
+        Trying to parse assignment, such as:
+
+        x = 12
+        x += 15
+        y -= 5
+        etc.
+    */
+
+    // eat the trailing white space
+    space();
+
+    std::string varname = "";
+    if (!name(&varname))
+        error("Expected variable name", varname);
+    
+    space();
+    
+    space();
+    // we can have an operator before the '=' sign
+    std::string op = "";
+    if (!operator_(&op))
+        return {};
+    if (op != "=" && !isOperator(op))  // what is it? we don't want it
+        return {};
+    space();
+    
+    if (auto exp = parseExp())
+        return std::make_shared<Assignment>(
+            varname,
+            exp.value(),
+            isOperator(op) ? op : "="
+        );
+    else
+        error("Expected a valid expression as a value to assign to variable", "");
     
     return {};
 }
@@ -755,22 +814,23 @@ MaybeNodePtr Parser::parseClass()
     while (true)
     {
         // first, try to get a valid instruction
-        if (auto inst = parseInt())
-            body.push_back(inst.value());
-        else
+        if (auto inst = parseInstruction())
         {
-            // otherwise, it's probably the constructor
-            if (!hadconstructor)
+            if (inst.value()->nodename == "end")
+                break;
+            else if (inst.value()->nodename == "class constructor")
             {
-                if (auto inst = parseConstructor())
+                if (!hadconstructor)
+                {
                     constructor = inst.value();
+                    hadconstructor = true;
+                    continue;
+                }
                 else
-                    error("Unexpected instruction, a valid constructor is needed", clsname);
-
-                hadconstructor = true;
+                    error("The constructor of a class must be unique", clsname);
             }
             else
-                error("The constructor of a class must be unique", clsname);
+                body.push_back(inst.value());
         }
     }
 
@@ -792,19 +852,18 @@ MaybeNodePtr Parser::parseConstructor()
 
     space();
 
-    // checking for 'new'
     std::string keyword = "";
     if (!name(&keyword))
         return {};
     if (keyword != "new")
         return {};
-
+    
     space();
 
     // getting name
     std::string constructorname = "";
     if (!name(&constructorname))
-        error("Expected constructor name", constructorname);
+        return {};
     
     space();
 
@@ -869,4 +928,30 @@ MaybeNodePtr Parser::parseConstructor()
     }
 
     return std::make_shared<ClsConstructor>(constructorname, arguments, body);
+}
+
+MaybeNodePtr Parser::parseRet()
+{
+    /*
+        Trying to parse:
+
+        ret *expression*
+    */
+
+    space();
+
+    std::string keyword = "";
+    if (!name(&keyword))
+        return {};
+    if (keyword != "ret")
+        return {};
+    
+    space();
+
+    if (auto expr = parseExp())
+        return std::make_shared<Ret>(expr.value());
+    else
+        error("Return instruction need a valid value", "");
+    
+    return {};
 }

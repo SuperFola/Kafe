@@ -64,10 +64,11 @@
         (Name Test)
         (ClassConstructor
             (Name Test)
-            (Arguments)
+            (Args)
             (Body
                 (Assignment
-                    (Name m_x)
+                    (VarName m_x)
+                    =
                     (Integer 10)
                 )
             )
@@ -75,9 +76,9 @@
         (Body
             (Function
                 (Name hiThere)
-                (Arguments
+                (Args
                     (Declaration
-                        (Name x)
+                        (VarName x)
                         (Type int)
                     )
                 )

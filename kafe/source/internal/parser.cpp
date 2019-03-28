@@ -137,8 +137,8 @@ bool ParserCombinators::name(std::string* s)
     // first character of a name must be alphabetic
     if (accept(IsAlpha, s))
     {
-        // the next ones can be alphanumeric
-        while (accept(IsAlnum, s));
+        // the next ones can be alphanumeric, or '_'
+        while (accept(IsAlnum, s) || accept(IsChar('_'), s));
         return true;
     }
     return false;

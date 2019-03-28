@@ -52,6 +52,7 @@ namespace kafe
         MaybeNodePtr parseInstruction();
         MaybeNodePtr parseDeclaration();
         MaybeNodePtr parseConstDef();
+        MaybeNodePtr parseAssignment();
         MaybeNodePtr parseExp();
             MaybeNodePtr parseOperation();
             MaybeNodePtr parseSingleExp();
@@ -68,6 +69,7 @@ namespace kafe
         MaybeNodePtr parseFunction();
         MaybeNodePtr parseClass();
             MaybeNodePtr parseConstructor();
+        MaybeNodePtr parseRet();
     };
 }
 
