@@ -341,8 +341,8 @@ void ClassInstanciation::toString(std::ostream& os, std::size_t indent)
 
 // ---------------------------
 
-ClsConstructor::ClsConstructor(const std::string& name, NodePtrList body) :
-    name(name), body(std::move(body))
+ClsConstructor::ClsConstructor(const std::string& name, NodePtrList arguments, NodePtrList body) :
+    name(name), arguments(std::move(arguments)), body(std::move(body))
     , Node("class constructor")
 {}
 
@@ -350,6 +350,18 @@ void ClsConstructor::toString(std::ostream& os, std::size_t indent)
 {
     printIndent(os, indent);     os << "(ClassConstructor\n";
     printIndent(os, indent + 1);     os << "(Name " << name << ")\n";
+    printIndent(os, indent + 1);     os << "(Arguments";
+    for (auto& node: arguments)
+    {
+        os << "\n";
+        node->toString(os, indent + 2);
+    }
+    if (arguments.size() > 0)
+    {
+        os << "\n";
+        printIndent(os, indent + 1);
+    }
+    os << ")\n";
     printIndent(os, indent + 1);     os << "(Body";
     for (auto& node: body)
     {

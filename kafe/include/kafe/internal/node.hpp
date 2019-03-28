@@ -245,9 +245,10 @@ namespace kafe
 
         struct ClsConstructor : public Node
         {
-            ClsConstructor(const std::string& name, NodePtrList body);
+            ClsConstructor(const std::string& name, NodePtrList arguments, NodePtrList body);
 
             const std::string name;
+            NodePtrList arguments;  // should be a vector of declarations
             NodePtrList body;
 
             virtual void toString(std::ostream& os, std::size_t indent);

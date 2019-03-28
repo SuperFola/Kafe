@@ -756,14 +756,14 @@ MaybeNodePtr Parser::parseClass()
     {
         // first, try to get a valid instruction
         if (auto inst = parseInt())
-            body.push_back(inst);
+            body.push_back(inst.value());
         else
         {
             // otherwise, it's probably the constructor
             if (!hadconstructor)
             {
                 if (auto inst = parseConstructor())
-                    constructor = inst;
+                    constructor = inst.value();
                 else
                     error("Unexpected instruction, a valid constructor is needed", clsname);
 
@@ -868,5 +868,5 @@ MaybeNodePtr Parser::parseConstructor()
             error("Expected valid instruction for body of constructor definition", "");
     }
 
-    return std::make_shared<ClsConstructor>(funcname, arguments, type, body);
+    return std::make_shared<ClsConstructor>(constructorname, arguments, body);
 }
