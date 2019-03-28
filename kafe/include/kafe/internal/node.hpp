@@ -82,6 +82,16 @@ namespace kafe
             virtual void toString(std::ostream& os, std::size_t indent);
         };
 
+        struct Assignment : public Node
+        {
+            Assignment(const std::string& varname, NodePtr value);
+
+            const std::string varname;
+            NodePtr value;
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
         // Node handling function: fun name(arg1: A, arg2: B) -> C *body* end
         struct Function : public Node
         {
@@ -233,6 +243,7 @@ namespace kafe
             virtual void toString(std::ostream& os, std::size_t indent);
         };
 
+        // when we are creating a new instance of a class
         struct ClassInstanciation : public Node
         {
             ClassInstanciation(const std::string& name, NodePtrList arguments);
@@ -243,6 +254,7 @@ namespace kafe
             virtual void toString(std::ostream& os, std::size_t indent);
         };
 
+        // the constructor of a class, handling its name, arguments and body
         struct ClsConstructor : public Node
         {
             ClsConstructor(const std::string& name, NodePtrList arguments, NodePtrList body);

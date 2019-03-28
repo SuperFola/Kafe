@@ -80,6 +80,21 @@ void ConstDef::toString(std::ostream& os, std::size_t indent)
 
 // ---------------------------
 
+Assignment::Assignment(const std::string& varname, NodePtr value) :
+    varname(varname), value(std::move(value))
+    , Node("assignment")
+{}
+
+void Assignment::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(Assignment\n";
+    printIndent(os, indent + 1);     os << "(VarName " << varname << ")\n";
+                                     value->toString(os, indent + 1); os << "\n";
+    printIndent(os, indent);     os << ")";
+}
+
+// ---------------------------
+
 Function::Function(const std::string& name, NodePtrList arguments, const std::string& type, NodePtrList body) :
     name(name), arguments(std::move(arguments)), type(type), body(std::move(body))
     , Node("function")
