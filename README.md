@@ -11,7 +11,7 @@ This language is aiming video games, and was created to replace Lua, which lacks
 ```
 cls Player
     // constructor, must be unique
-    Player(x: int, y: int, name: string)
+    new Player(x: int, y: int, name: string)
         m_x = x
         m_y = y
         m_name = name

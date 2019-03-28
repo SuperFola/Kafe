@@ -97,12 +97,11 @@ namespace kafe
 
         struct Class : public Node
         {
-            Class(const std::string& name, NodePtr constructor, NodePtrList methods, NodePtrList attributes);
+            Class(const std::string& name, NodePtr constructor, NodePtrList body);
 
             const std::string name;
             NodePtr constructor;  // should be a function
-            NodePtrList methods;  // should be a vector of function
-            NodePtrList attributes;  // should be a vector of definition/declaration
+            NodePtrList body;  // should be a vector of functions/definitions/declarations
 
             virtual void toString(std::ostream& os, std::size_t indent);
         };
@@ -230,6 +229,16 @@ namespace kafe
             const std::string classname;
             const std::string funcname;
             NodePtrList arguments;
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
+        struct ClsConstructor : public Node
+        {
+            ClsConstructor(const std::string& name, NodePtrList body);
+
+            const std::string name;
+            NodePtrList body;
 
             virtual void toString(std::ostream& os, std::size_t indent);
         };

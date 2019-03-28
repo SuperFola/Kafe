@@ -119,14 +119,29 @@ void Function::toString(std::ostream& os, std::size_t indent)
 
 // ---------------------------
 
-Class::Class(const std::string& name, NodePtr constructor, NodePtrList methods, NodePtrList attributes) :
-    name(name), constructor(std::move(constructor)), methods(std::move(methods)), attributes(std::move(attributes))
+Class::Class(const std::string& name, NodePtr constructor, NodePtrList body) :
+    name(name), constructor(std::move(constructor)), body(std::move(body))
     , Node("class")
 {}
 
 void Class::toString(std::ostream& os, std::size_t indent)
 {
-    printIndent(os, indent);     os << "(Class)";
+    printIndent(os, indent);     os << "(Class\n";
+    printIndent(os, indent + 1);     os << "(Name " << name << ")\n";
+    constructor->toString(os, indent + 1);
+    printIndent(os, indent + 1);     os << "(Body";
+    for (auto& node: body)
+    {
+        os << "\n";
+        node->toString(os, indent + 2);
+    }
+    if (body.size() > 0)
+    {
+        os << "\n";
+        printIndent(os, indent + 1);
+    }
+    os << ")\n";
+    printIndent(os, indent);     os << ")";
 }
 
 // ---------------------------
@@ -290,6 +305,32 @@ void MethodCall::toString(std::ostream& os, std::size_t indent)
         node->toString(os, indent + 2);
     }
     if (arguments.size() > 0)
+    {
+        os << "\n";
+        printIndent(os, indent + 1);
+    }
+    os << ")\n";
+    printIndent(os, indent);     os << ")";
+}
+
+// ---------------------------
+
+ClsConstructor::ClsConstructor(const std::string& name, NodePtrList body) :
+    name(name), body(std::move(body))
+    , Node("class constructor")
+{}
+
+void ClsConstructor::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(ClassConstructor\n";
+    printIndent(os, indent + 1);     os << "(Name " << name << ")\n";
+    printIndent(os, indent + 1);     os << "(Body";
+    for (auto& node: body)
+    {
+        os << "\n";
+        node->toString(os, indent + 2);
+    }
+    if (body.size() > 0)
     {
         os << "\n";
         printIndent(os, indent + 1);

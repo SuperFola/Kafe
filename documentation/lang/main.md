@@ -53,7 +53,7 @@ A class can must only one constructor.
 
 ```
 cls Name
-    Name(x: int)  // ok
+    new Name(x: int)  // ok
         stuff...
     end
 
@@ -63,11 +63,11 @@ cls Name
 end
 
 cls Test
-    Test()
+    new Test()
         stuff...
     end
 
-    Test(x: int)  // won't work, ParseError
+    new Test(x: int)  // won't work, ParseError
         stuff...
     end
 end

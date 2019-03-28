@@ -78,14 +78,8 @@ MaybeNodePtr Parser::parseInstruction()
     
 
     // function/method calls as expression, not as instruction!
-    // FunctionCall and MethodCall should be the last ones of the list
-    if (auto inst = parseFunctionCall())
-        error("Function calls as instructions are forbidden", "");
-    else
-        back(getCount() - current + 1);
-    
-    if (auto inst = parseMethodCall())
-        error("Method calls as instructions are forbidden", "");
+    if (auto inst = parseExp())
+        error("Expressions as instructions are forbidden", "");
     else
         back(getCount() - current + 1);
     
@@ -214,8 +208,8 @@ MaybeNodePtr Parser::parseOperation()
 {
     /*
         Trying to parse operations such as
-        (1 + 2)
-        (1 / (2 + 3))
+        1 + 2
+        1 / (2 + 3)
 
         Get current token: it must be a '('
         If it's not => quit
@@ -231,8 +225,6 @@ MaybeNodePtr Parser::parseOperation()
         
         TODO This parser should also do a "shunting yard"
     */
-
-    space();
     
     // parse expressions
     NodePtrList operations;
@@ -642,9 +634,9 @@ MaybeNodePtr Parser::parseClass()
     /*
         Trying to parse class definition:
 
-        class Name
+        cls Name
             // only one constructor!
-            Name(arg: type, ...)
+            new Name(arg: type, ...)
                 ...  // no ret here!
             end
 
@@ -658,5 +650,140 @@ MaybeNodePtr Parser::parseClass()
         end
     */
 
-    return {};
+    space();
+
+    std::string keyword = "";
+    if (!name(&keyword))
+        return {};
+    if (keyword != "cls")
+        return {};
+    
+    space();
+
+    std::string clsname = "";
+    if (!name(&clsname))
+        error("Expected class name", clsname);
+    
+    space();
+
+    bool hadconstructor = false;
+    NodePtrList body;
+    NodePtr constructor;
+    while (true)
+    {
+        // first, try to get a valid instruction
+        if (auto inst = parseInt())
+            body.push_back(inst);
+        else
+        {
+            // otherwise, it's probably the constructor
+            if (!hadconstructor)
+            {
+                if (auto inst = parseConstructor())
+                    constructor = inst;
+                else
+                    error("Unexpected instruction, a valid constructor is needed", clsname);
+
+                hadconstructor = true;
+            }
+            else
+                error("The constructor of a class must be unique", clsname);
+        }
+    }
+
+    if (!hadconstructor)
+        error("Class definition must include a constructor", clsname);
+
+    return std::make_shared<Class>(clsname, constructor, body);
+}
+
+MaybeNodePtr Parser::parseConstructor()
+{
+    /*
+        Trying to parse constructor definitions such as:
+
+        new Name(arg: type, ...)
+            stuff...
+        end
+    */
+
+    space();
+
+    // checking for 'new'
+    std::string keyword = "";
+    if (!name(&keyword))
+        return {};
+    if (keyword != "new")
+        return {};
+
+    space();
+
+    // getting name
+    std::string constructorname = "";
+    if (!name(&constructorname))
+        error("Expected constructor name", constructorname);
+    
+    space();
+
+    // getting arguments (enclosed in ())
+    NodePtrList arguments;
+    if (except(IsChar('(')))
+    {
+        while (true)
+        {
+            // eat the trailing white space
+            space();
+
+            // check if end of arguments
+            if (accept(IsChar(')')))
+                break;
+
+            std::string varname = "";
+            if (!name(&varname))
+                break;  // we don't have arguments
+            
+            space();
+            // : after varname and before type is mandatory
+            if (!except(IsChar(':')))
+                error("Expected ':' after argument name and before type name", "");
+            space();
+
+            std::string type = "";
+            if (!name(&type))
+                error("Expected type name for argument in function definition", type);
+            
+            space();
+
+            // register argument
+            arguments.push_back(
+                std::make_shared<Declaration>(varname, type)
+            );
+
+            // check for ',' -> other arguments
+            if (accept(IsChar(',')))
+                continue;
+        }
+    }
+
+    space();
+    
+    // getting the body
+    NodePtrList body;
+    while (true)
+    {
+        MaybeNodePtr inst = parseInstruction();
+
+        // after getting the instruction, check if it's valid
+        if (inst)
+        {
+            // if we found a 'end' token, stop
+            if (inst.value()->nodename == "end")
+                break;
+            body.push_back(inst.value());
+        }
+        else
+            error("Expected valid instruction for body of constructor definition", "");
+    }
+
+    return std::make_shared<ClsConstructor>(funcname, arguments, type, body);
 }
