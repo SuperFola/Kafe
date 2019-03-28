@@ -315,6 +315,32 @@ void MethodCall::toString(std::ostream& os, std::size_t indent)
 
 // ---------------------------
 
+ClassInstanciation::ClassInstanciation(const std::string& name, NodePtrList arguments) :
+    name(name), arguments(std::move(arguments))
+    , Node("class instanciation")
+{}
+
+void ClassInstanciation::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(ClassInstanciation\n";
+    printIndent(os, indent + 1);     os << "(Name " << name << ")\n";
+    printIndent(os, indent + 1);     os << "(Args";
+    for (auto& node: arguments)
+    {
+        os << "\n";
+        node->toString(os, indent + 2);
+    }
+    if (arguments.size() > 0)
+    {
+        os << "\n";
+        printIndent(os, indent + 1);
+    }
+    os << ")\n";
+    printIndent(os, indent);     os << ")";
+}
+
+// ---------------------------
+
 ClsConstructor::ClsConstructor(const std::string& name, NodePtrList body) :
     name(name), body(std::move(body))
     , Node("class constructor")

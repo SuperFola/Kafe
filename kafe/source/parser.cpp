@@ -311,7 +311,11 @@ MaybeNodePtr Parser::parseSingleExp()
         return exp;
     else
         back(getCount() - current + 1);
-
+    
+    if (auto exp = parseClassInstanciation())  // new Stuff("hello", 12)
+        return exp;
+    else
+        back(getCount() - current + 1);
     
     if (auto exp = parseFunctionCall())  // foo(42, -6.66)
         return exp;
@@ -379,6 +383,62 @@ MaybeNodePtr Parser::parseBool()
     else if (s == "true")
         return std::make_shared<Bool>(true);
     
+    return {};
+}
+
+MaybeNodePtr Parser::parseClassInstanciation()
+{
+    /*
+        Trying to parse class instanciation:
+
+        new Stuff(5, 12)
+    */
+
+    space();
+
+    std::string keyword = "";
+    if (!name(&keyword))
+        return {};
+    if (keyword != "new")
+        return {};
+    
+    space();
+
+    // getting the name of the class
+    std::string clsname = "";
+    if (!name(&clsname))
+        return {};
+    
+    space();
+    
+    // getting the arguments
+    NodePtrList arguments;
+    if (accept(IsChar('(')))
+    {
+        while (true)
+        {
+            // eat the trailing white space
+            space();
+
+            // check if end of arguments
+            if (accept(IsChar(')')))
+                break;
+
+            // find argument
+            if (auto inst = parseExp())
+                arguments.push_back(inst.value());
+            else
+                error("Expected a valid expression as class constructor argument", "");
+
+            space();
+
+            // check for ',' -> other arguments
+            if (accept(IsChar(',')))
+                continue;
+        }
+
+        return std::make_shared<ClassInstanciation>(clsname, arguments);
+    }
     return {};
 }
 

@@ -59,6 +59,7 @@ namespace kafe
                 MaybeNodePtr parseFloat();
                 MaybeNodePtr parseString();
                 MaybeNodePtr parseBool();
+                MaybeNodePtr parseClassInstanciation();
                 MaybeNodePtr parseFunctionCall();
                 MaybeNodePtr parseMethodCall();
                 MaybeNodePtr parseVarUse();

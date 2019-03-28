@@ -233,6 +233,16 @@ namespace kafe
             virtual void toString(std::ostream& os, std::size_t indent);
         };
 
+        struct ClassInstanciation : public Node
+        {
+            ClassInstanciation(const std::string& name, NodePtrList arguments);
+
+            const std::string name;
+            NodePtrList arguments;
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
         struct ClsConstructor : public Node
         {
             ClsConstructor(const std::string& name, NodePtrList body);
