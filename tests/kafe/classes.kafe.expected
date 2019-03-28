@@ -60,4 +60,46 @@
             )
         )
     )
+    (Class
+        (Name Test)
+        (ClassConstructor
+            (Name Test)
+            (Arguments)
+            (Body
+                (Assignment
+                    (Name m_x)
+                    (Integer 10)
+                )
+            )
+        )
+        (Body
+            (Function
+                (Name hiThere)
+                (Arguments
+                    (Declaration
+                        (Name x)
+                        (Type int)
+                    )
+                )
+                (Type int)
+                (Body
+                    (Ret
+                        (OperationsList
+                            (VarUse x)
+                            (Operator *)
+                            (Integer 2)
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (Definition
+        (VarName lol)
+        (Type Test)
+        (ClassInstanciation
+            (Name Test)
+            (Args)
+        )
+    )
 )
