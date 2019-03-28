@@ -291,6 +291,11 @@ MaybeNodePtr Parser::parseSingleExp()
 {
     auto current = getCount();
 
+    if (auto exp = parseOperationBlock())  // (1 + 2 - 4)
+        return exp;
+    else
+        back(getCount() - current + 1);
+
     // parsing float before integer because float requires a '.'
     if (auto exp = parseFloat())  // 1.5
         return exp;
@@ -335,6 +340,24 @@ MaybeNodePtr Parser::parseSingleExp()
     
     error("Couldn't parse single expression", "");
     return {};  // to avoid warnings
+}
+
+MaybeNodePtr Parser::parseOperationBlock()
+{
+    /*
+        Trying to parse operations, but inside parens, such as:
+
+        (1 + 2 - 5)
+    */
+
+    if (accept(IsChar('(')))
+    {
+        MaybeNodePtr op = parseOperation();
+        if (op && accept(IsChar(')')))
+            return op;
+    }
+
+    return {};
 }
 
 MaybeNodePtr Parser::parseInt()

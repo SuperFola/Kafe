@@ -55,6 +55,7 @@ namespace kafe
         MaybeNodePtr parseExp();
             MaybeNodePtr parseOperation();
             MaybeNodePtr parseSingleExp();
+                MaybeNodePtr parseOperationBlock();
                 MaybeNodePtr parseInt();
                 MaybeNodePtr parseFloat();
                 MaybeNodePtr parseString();
