@@ -46,7 +46,13 @@ namespace kafe
                     name == "<=" || name == ">=");
         }
 
+        // custom parsers for tokens
         bool operator_(std::string* s=nullptr);
+        bool inlineSpace(std::string* s=nullptr);
+        bool endOfLine(std::string* s=nullptr);
+        bool comment(std::string* s=nullptr);
+        bool endOfLineAndOrComment(std::string* s=nullptr);
+        bool multilineComment(std::string* s=nullptr);
 
         // parsers
         MaybeNodePtr parseInstruction();

@@ -1,5 +1,6 @@
 x:int
-x: int
+// this is a comment
+x: int  // test
 x :int
 x : int
 

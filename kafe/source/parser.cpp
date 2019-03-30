@@ -41,10 +41,78 @@ bool Parser::operator_(std::string* s)
     return false;
 }
 
+bool Parser::inlineSpace(std::string* s)
+{
+    if (accept(IsInlineSpace))
+    {
+        if (s != nullptr)
+            s->push_back(' ');
+        // loop while there are still ' ' to consume
+        while (accept(IsInlineSpace));
+        return true;
+    }
+    return false;
+}
+
+bool Parser::endOfLine(std::string* s)
+{
+    if ((accept(IsChar('\r')) || true) && accept(IsChar('\n')))
+    {
+        if (s != nullptr)
+            s->push_back('\n');
+        while ((accept(IsChar('\r')) || true) && accept(IsChar('\n')));
+        return true;
+    }
+    return false;
+}
+
+bool Parser::comment(std::string* s)
+{
+    inlineSpace();
+
+    // inline comment starts with '//'
+    if (accept(IsChar('/')) && accept(IsChar('/')))
+    {
+        while (accept(IsNot(IsChar('\n')), s));
+        return true;
+    }
+    return false;
+}
+
+bool Parser::endOfLineAndOrComment(std::string* s)
+{
+    comment(s);
+    return endOfLine(s);
+}
+
+bool Parser::multilineComment(std::string* s)
+{
+    inlineSpace();
+
+    // multiline comment starts with / and *
+    if (accept(IsChar('/')) && accept(IsChar('*')))
+    {
+        while (accept(IsNot(IsChar('*')), s) && accept(IsNot(IsChar('/')), s));
+        return true;
+    }
+    return false;
+}
+
 MaybeNodePtr Parser::parseInstruction()
 {
     // save current position in buffer to be able to go back if needed
     auto current = getCount();
+
+    // parsing multiline comments as instructions
+    if (multilineComment())
+        endOfLine();
+    else
+        back(getCount() - current + 1);
+    // same for single line comments
+    if (comment())
+        endOfLine();
+    else
+        back(getCount() - current + 1);
 
     // x:type, x:type=value
     if (auto inst = parseDeclaration())
@@ -113,32 +181,42 @@ MaybeNodePtr Parser::parseDeclaration()
     */
 
     // eat the trailing white space
-    space();
+    inlineSpace();
 
     std::string varname = "";
     if (!name(&varname))
         return {};
     
-    space();
+    inlineSpace();
     // : after varname and before type is mandatory
     if (!accept(IsChar(':')))
         return {};
-    space();
+    inlineSpace();
 
     std::string type = "";
     if (!name(&type))
         error("Expected type name for declaration", type);
     
-    space();
+    inlineSpace();
     // checking for value (optional)
     if (!accept(IsChar('=')))
-        return std::make_shared<Declaration>(varname, type);
+    {
+        auto temp = std::make_shared<Declaration>(varname, type);
+        if (!endOfLineAndOrComment())
+            error("Expected end of line after declaration", "");
+        return temp;
+    }
     else
     {
-        space();
+        inlineSpace();
 
         if (auto exp = parseExp())
-            return std::make_shared<Definition>(varname, type, exp.value());
+        {
+            auto temp = std::make_shared<Definition>(varname, type, exp.value());
+            if (!endOfLineAndOrComment())
+                error("Expected end of line after definition", "");
+            return temp;
+        }
         else
             error("Expected a valid expression for definition", "");
     }
@@ -155,7 +233,7 @@ MaybeNodePtr Parser::parseConstDef()
     */
 
     // eat the trailing white space
-    space();
+    inlineSpace();
 
     // checking if 'cst' is present
     std::string const_qualifier = "";
@@ -164,28 +242,33 @@ MaybeNodePtr Parser::parseConstDef()
     if (const_qualifier != "cst")
         return {};
     
-    space();
+    inlineSpace();
 
     std::string varname = "";
     if (!name(&varname))
         error("Expected constant name", varname);
     
-    space();
+    inlineSpace();
     // : after varname and before type is mandatory
     except(IsChar(':'));
-    space();
+    inlineSpace();
 
     std::string type = "";
     if (!name(&type))
         error("Expected type name for constant definition", type);
     
-    space();
+    inlineSpace();
     // checking for value
     except(IsChar('='));
-    space();
+    inlineSpace();
     
     if (auto exp = parseExp())
-        return std::make_shared<ConstDef>(varname, type, exp.value());
+    {
+        auto temp = std::make_shared<ConstDef>(varname, type, exp.value());
+        if (!endOfLineAndOrComment())
+            error("Expected end of line after constant definition", "");
+        return temp;
+    }
     else
         error("Expected a valid expression as a value for constant definition", "");
     
@@ -204,29 +287,34 @@ MaybeNodePtr Parser::parseAssignment()
     */
 
     // eat the trailing white space
-    space();
+    inlineSpace();
 
     std::string varname = "";
     if (!name(&varname))
         error("Expected variable name", varname);
     
-    space();
+    inlineSpace();
     
-    space();
+    inlineSpace();
     // we can have an operator before the '=' sign
     std::string op = "";
     if (!operator_(&op))
         return {};
     if (op != "=" && !isOperator(op))  // what is it? we don't want it
         return {};
-    space();
+    inlineSpace();
     
     if (auto exp = parseExp())
-        return std::make_shared<Assignment>(
+    {
+        auto temp = std::make_shared<Assignment>(
             varname,
             exp.value(),
             isOperator(op) ? op : "="
         );
+        if (!endOfLineAndOrComment())
+            error("Expected end of line after assignment", "");
+        return temp;
+    }
     else
         error("Expected a valid expression as a value to assign to variable", "");
     
@@ -289,7 +377,7 @@ MaybeNodePtr Parser::parseOperation()
     NodePtrList operations;
     while (true)
     {
-        space();
+        inlineSpace();
 
         // getting prefix operator
         auto current = getCount();
@@ -309,7 +397,7 @@ MaybeNodePtr Parser::parseOperation()
         else
             back(getCount() - current + 1);
         
-        space();
+        inlineSpace();
         
         // get operand
         current = getCount();
@@ -322,7 +410,7 @@ MaybeNodePtr Parser::parseOperation()
             break;
         }
         
-        space();
+        inlineSpace();
 
         current = getCount();
         std::string op = "";
@@ -476,7 +564,7 @@ MaybeNodePtr Parser::parseClassInstanciation()
         new Stuff(5, 12)
     */
 
-    space();
+    inlineSpace();
 
     std::string keyword = "";
     if (!name(&keyword))
@@ -484,14 +572,14 @@ MaybeNodePtr Parser::parseClassInstanciation()
     if (keyword != "new")
         return {};
     
-    space();
+    inlineSpace();
 
     // getting the name of the class
     std::string clsname = "";
     if (!name(&clsname))
         return {};
     
-    space();
+    inlineSpace();
     
     // getting the arguments
     NodePtrList arguments;
@@ -500,7 +588,7 @@ MaybeNodePtr Parser::parseClassInstanciation()
         while (true)
         {
             // eat the trailing white space
-            space();
+            inlineSpace();
 
             // check if end of arguments
             if (accept(IsChar(')')))
@@ -512,7 +600,7 @@ MaybeNodePtr Parser::parseClassInstanciation()
             else
                 error("Expected a valid expression as class constructor argument", "");
 
-            space();
+            inlineSpace();
 
             // check for ',' -> other arguments
             if (accept(IsChar(',')))
@@ -534,14 +622,14 @@ MaybeNodePtr Parser::parseFunctionCall()
         doStuff()
     */
 
-    space();
+    inlineSpace();
 
     // getting the name of the function
     std::string funcname = "";
     if (!name(&funcname))
         return {};
     
-    space();
+    inlineSpace();
     
     // getting the arguments
     NodePtrList arguments;
@@ -550,7 +638,7 @@ MaybeNodePtr Parser::parseFunctionCall()
         while (true)
         {
             // eat the trailing white space
-            space();
+            inlineSpace();
 
             // check if end of arguments
             if (accept(IsChar(')')))
@@ -562,7 +650,7 @@ MaybeNodePtr Parser::parseFunctionCall()
             else
                 error("Expected a valid expression as function argument", "");
 
-            space();
+            inlineSpace();
 
             // check for ',' -> other arguments
             if (accept(IsChar(',')))
@@ -584,7 +672,7 @@ MaybeNodePtr Parser::parseMethodCall()
         you.doStuff()
     */
 
-    space();
+    inlineSpace();
 
     // getting the name of the object
     std::string objectname = "";
@@ -599,7 +687,7 @@ MaybeNodePtr Parser::parseMethodCall()
     if (!name(&funcname))
         error("Expecting a method name after '" + objectname + ".'", funcname);
     
-    space();
+    inlineSpace();
     
     // getting the arguments
     NodePtrList arguments;
@@ -608,7 +696,7 @@ MaybeNodePtr Parser::parseMethodCall()
         while (true)
         {
             // eat the trailing white space
-            space();
+            inlineSpace();
 
             // check if end of arguments
             if (accept(IsChar(')')))
@@ -620,7 +708,7 @@ MaybeNodePtr Parser::parseMethodCall()
             else
                 error("Expected a valid expression as method argument", "");
 
-            space();
+            inlineSpace();
 
             // check for ',' -> other arguments
             if (accept(IsChar(',')))
@@ -658,7 +746,7 @@ MaybeNodePtr Parser::parseEnd()
         Trying to parse 'end' tokens
     */
 
-    space();
+    inlineSpace();
 
     std::string keyword = "";
     if (!name(&keyword))
@@ -666,7 +754,10 @@ MaybeNodePtr Parser::parseEnd()
     if (keyword != "end")
         return {};
     
-    return std::make_shared<End>();
+    auto temp = std::make_shared<End>();
+    if (!endOfLineAndOrComment())
+        error("Expected end of line after keyword end", "");
+    return temp;
 }
 
 MaybeNodePtr Parser::parseFunction()
@@ -682,7 +773,7 @@ MaybeNodePtr Parser::parseFunction()
     */
 
     // eat trailing white spaces
-    space();
+    inlineSpace();
 
     // checking for 'fun'
     std::string keyword = "";
@@ -691,14 +782,14 @@ MaybeNodePtr Parser::parseFunction()
     if (keyword != "fun")
         return {};
 
-    space();
+    inlineSpace();
 
     // getting name
     std::string funcname = "";
     if (!name(&funcname))
         error("Expected function name", funcname);
     
-    space();
+    inlineSpace();
 
     // getting arguments (enclosed in ())
     NodePtrList arguments;
@@ -707,7 +798,7 @@ MaybeNodePtr Parser::parseFunction()
         while (true)
         {
             // eat the trailing white space
-            space();
+            inlineSpace();
 
             // check if end of arguments
             if (accept(IsChar(')')))
@@ -717,17 +808,17 @@ MaybeNodePtr Parser::parseFunction()
             if (!name(&varname))
                 break;  // we don't have arguments
             
-            space();
+            inlineSpace();
             // : after varname and before type is mandatory
             if (!except(IsChar(':')))
                 error("Expected ':' after argument name and before type name", "");
-            space();
+            inlineSpace();
 
             std::string type = "";
             if (!name(&type))
                 error("Expected type name for argument in function definition", type);
             
-            space();
+            inlineSpace();
 
             // register argument
             arguments.push_back(
@@ -740,15 +831,17 @@ MaybeNodePtr Parser::parseFunction()
         }
     }
 
-    space();
+    inlineSpace();
     // need the full '->'
     except(IsChar('-')); except(IsChar('>'));
-    space();
+    inlineSpace();
 
     // getting function type
     std::string type = "";
     if (!name(&type))
         error("Expected return type for function definition", type);
+    if (!endOfLineAndOrComment())
+        error("Expected end of line after function return type", "");;
     
     // getting the body
     NodePtrList body;
@@ -792,7 +885,7 @@ MaybeNodePtr Parser::parseClass()
         end
     */
 
-    space();
+    inlineSpace();
 
     std::string keyword = "";
     if (!name(&keyword))
@@ -800,13 +893,14 @@ MaybeNodePtr Parser::parseClass()
     if (keyword != "cls")
         return {};
     
-    space();
+    inlineSpace();
 
     std::string clsname = "";
     if (!name(&clsname))
         error("Expected class name", clsname);
     
-    space();
+    if (!endOfLineAndOrComment())
+        error("Expected end of line after class name", "");;
 
     bool hadconstructor = false;
     NodePtrList body;
@@ -850,7 +944,7 @@ MaybeNodePtr Parser::parseConstructor()
         end
     */
 
-    space();
+    inlineSpace();
 
     std::string keyword = "";
     if (!name(&keyword))
@@ -858,14 +952,14 @@ MaybeNodePtr Parser::parseConstructor()
     if (keyword != "new")
         return {};
     
-    space();
+    inlineSpace();
 
     // getting name
     std::string constructorname = "";
     if (!name(&constructorname))
         return {};
     
-    space();
+    inlineSpace();
 
     // getting arguments (enclosed in ())
     NodePtrList arguments;
@@ -874,7 +968,7 @@ MaybeNodePtr Parser::parseConstructor()
         while (true)
         {
             // eat the trailing white space
-            space();
+            inlineSpace();
 
             // check if end of arguments
             if (accept(IsChar(')')))
@@ -884,17 +978,17 @@ MaybeNodePtr Parser::parseConstructor()
             if (!name(&varname))
                 break;  // we don't have arguments
             
-            space();
+            inlineSpace();
             // : after varname and before type is mandatory
             if (!except(IsChar(':')))
                 error("Expected ':' after argument name and before type name", "");
-            space();
+            inlineSpace();
 
             std::string type = "";
             if (!name(&type))
                 error("Expected type name for argument in function definition", type);
             
-            space();
+            inlineSpace();
 
             // register argument
             arguments.push_back(
@@ -907,7 +1001,8 @@ MaybeNodePtr Parser::parseConstructor()
         }
     }
 
-    space();
+    if (!endOfLineAndOrComment())
+        error("Expected end of line after constructor prototype", "");;
     
     // getting the body
     NodePtrList body;
@@ -938,7 +1033,7 @@ MaybeNodePtr Parser::parseRet()
         ret *expression*
     */
 
-    space();
+    inlineSpace();
 
     std::string keyword = "";
     if (!name(&keyword))
@@ -946,10 +1041,15 @@ MaybeNodePtr Parser::parseRet()
     if (keyword != "ret")
         return {};
     
-    space();
+    inlineSpace();
 
     if (auto expr = parseExp())
-        return std::make_shared<Ret>(expr.value());
+    {
+        auto temp = std::make_shared<Ret>(expr.value());
+        if (!endOfLineAndOrComment())
+            error("Expected end of line after return statement", "");;
+        return temp;
+    }
     else
         error("Return instruction need a valid value", "");
     

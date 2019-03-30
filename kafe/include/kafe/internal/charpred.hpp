@@ -31,6 +31,15 @@ namespace kafe
             }
         } IsSpace;
 
+        inline struct IsInlineSpace : public CharPred
+        {
+            IsInlineSpace() : CharPred("inline space") {}
+            virtual bool operator() (const int c) const override
+            {
+                return (std::isspace(c) != 0) && (c != '\n') && (c != '\r');
+            }
+        } IsInlineSpace;
+
         inline struct IsDigit : public CharPred
         {
             IsDigit() : CharPred("digit") {}
