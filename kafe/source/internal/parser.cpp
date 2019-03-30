@@ -1,4 +1,5 @@
 #include <kafe/internal/parser.hpp>
+#include <iostream>
 
 using namespace kafe::internal;
 
@@ -52,6 +53,11 @@ int ParserCombinators::getCount()
     return m_count;
 }
 
+std::size_t ParserCombinators::getSize()
+{
+    return m_in.size();
+}
+
 bool ParserCombinators::isEOF()
 {
     return m_sym == '\0';
@@ -60,7 +66,7 @@ bool ParserCombinators::isEOF()
 void ParserCombinators::back(std::size_t n)
 {
     // going back into the string and adjusting the rows count
-    for (std::size_t i=0; i < n; i++)
+    for (std::size_t i=0; i < n && m_count > 0; i++)
     {
         m_sym = m_in[m_count];
         --m_count;

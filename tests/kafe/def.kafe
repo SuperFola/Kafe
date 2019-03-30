@@ -3,21 +3,23 @@ x:int
 x: int  // test
 x :int
 x : int
+// another test
+// yeah
+
+// owo
 
 x:int=1
 x: int=1
 x :int=1
 x : int=1
 
-/* test */
-
+// testing
 x:int = 1
 x: int = 1
 x :int = 1
 x : int = 1
 
 cst x:int=1
-
 x: int = foo()
 x: int = foo(1)
 x: int = foo(1, "hello")

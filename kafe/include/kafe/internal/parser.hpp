@@ -47,6 +47,7 @@ namespace kafe
             int getCol();
             int getRow();
             int getCount();
+            std::size_t getSize();
             bool isEOF();
 
             void back(std::size_t n);

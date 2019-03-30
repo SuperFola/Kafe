@@ -85,49 +85,14 @@ bool Parser::endOfLineAndOrComment(std::string* s)
     return endOfLine(s);
 }
 
-bool Parser::multilineComment(std::string* s)
-{
-    inlineSpace();
-
-    // multiline comment starts with / and *
-    if (accept(IsChar('/')) && accept(IsChar('*')))
-    {
-        std::string temp = "";
-        while (true)
-        {
-            accept(IsAny, &temp);
-
-            std::cout << temp << std::endl;
-
-            // checking for * and /
-            if (temp.size() > 1 && temp[temp.size() - 2] == '*' && temp[temp.size() - 1] == '/')
-                break;
-
-            if (s != nullptr)
-                s->push_back(temp[temp.size() - 1]);
-        }
-        if (s != nullptr)
-            s->erase(s->end() - 1);
-        return true;
-    }
-    return false;
-}
-
 MaybeNodePtr Parser::parseInstruction()
 {
     // save current position in buffer to be able to go back if needed
     auto current = getCount();
 
-    // parsing multiline comments as instructions
-    if (multilineComment())
+    // parsing single line comments as instructions
+    while (comment())
         endOfLine();
-    else
-        back(getCount() - current + 1);
-    // same for single line comments
-    if (comment())
-        endOfLine();
-    else
-        back(getCount() - current + 1);
 
     // x:type, x:type=value
     if (auto inst = parseDeclaration())
@@ -176,7 +141,6 @@ MaybeNodePtr Parser::parseInstruction()
         return inst;
     else
         back(getCount() - current + 1);
-    
 
     // function/method calls as expression, not as instruction!
     if (auto inst = parseExp())
@@ -306,17 +270,17 @@ MaybeNodePtr Parser::parseAssignment()
 
     std::string varname = "";
     if (!name(&varname))
-        error("Expected variable name", varname);
+        return {};
     
     inlineSpace();
     
-    inlineSpace();
     // we can have an operator before the '=' sign
     std::string op = "";
     if (!operator_(&op))
         return {};
     if (op != "=" && !isOperator(op))  // what is it? we don't want it
         return {};
+    
     inlineSpace();
     
     if (auto exp = parseExp())
