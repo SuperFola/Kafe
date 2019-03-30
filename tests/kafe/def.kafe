@@ -9,6 +9,8 @@ x: int=1
 x :int=1
 x : int=1
 
+/* test */
+
 x:int = 1
 x: int = 1
 x :int = 1

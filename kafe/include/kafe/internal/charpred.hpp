@@ -137,6 +137,15 @@ namespace kafe
             const CharPred& m_a;
         };
 
+        inline struct IsAny : public CharPred
+        {
+            IsAny() : CharPred("any") {}
+            virtual bool operator() (const int c) const override
+            {
+                return true;
+            }
+        } IsAny;
+
         const IsChar IsMinus('-');
     }
 }

@@ -92,7 +92,22 @@ bool Parser::multilineComment(std::string* s)
     // multiline comment starts with / and *
     if (accept(IsChar('/')) && accept(IsChar('*')))
     {
-        while (accept(IsNot(IsChar('*')), s) && accept(IsNot(IsChar('/')), s));
+        std::string temp = "";
+        while (true)
+        {
+            accept(IsAny, &temp);
+
+            std::cout << temp << std::endl;
+
+            // checking for * and /
+            if (temp.size() > 1 && temp[temp.size() - 2] == '*' && temp[temp.size() - 1] == '/')
+                break;
+
+            if (s != nullptr)
+                s->push_back(temp[temp.size() - 1]);
+        }
+        if (s != nullptr)
+            s->erase(s->end() - 1);
         return true;
     }
     return false;
