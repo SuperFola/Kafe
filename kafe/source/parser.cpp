@@ -1098,7 +1098,7 @@ MaybeNodePtr Parser::parseIf()
 
         // no elifs or else, just return the if
         if (!has_elifs && !has_else)
-            return std::make_shared<IfClause>(exp, body, NodePtrList{}, NodePtrList{});
+            return std::make_shared<IfClause>(exp.value(), body, NodePtrList{}, NodePtrList{});
         
         NodePtrList elifClauses;
 
@@ -1149,7 +1149,7 @@ MaybeNodePtr Parser::parseIf()
                             error("Expected valid instruction for body of if", "");
                     }
 
-                    elifClauses.push_back(std::make_shared<IfClause>(cond2, bodyElif, NodePtrList{}, NodePtrList{}));
+                    elifClauses.push_back(std::make_shared<IfClause>(cond2.value(), bodyElif, NodePtrList{}, NodePtrList{}));
 
                     if (!has_elifs)
                         break;
@@ -1157,8 +1157,6 @@ MaybeNodePtr Parser::parseIf()
                 else
                     error("Expected valid expression as a condition for 'elif'", "");
             }
-
-            return std::make_shared<IfClause>(exp, body, NodePtrList{}, bodyElse);
         }
 
 label_parse_else:
@@ -1181,10 +1179,10 @@ label_parse_else:
                     error("Expected valid instruction for body of else", "");
             }
 
-            return std::make_shared<IfClause>(exp, body, elifClauses, bodyElse);
+            return std::make_shared<IfClause>(exp.value(), body, elifClauses, bodyElse);
         }
         else
-            return std::make_shared<IfClause>(exp, body, elifClauses, NodePtrList{});
+            return std::make_shared<IfClause>(exp.value(), body, elifClauses, NodePtrList{});
     }
     else
         error("Expected valid expression as a condition for 'if'", "");
