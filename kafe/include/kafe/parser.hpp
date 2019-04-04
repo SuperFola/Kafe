@@ -52,7 +52,6 @@ namespace kafe
         bool endOfLine(std::string* s=nullptr);
         bool comment(std::string* s=nullptr);
         bool endOfLineAndOrComment(std::string* s=nullptr);
-        bool multilineComment(std::string* s=nullptr);
 
         // parsers
         MaybeNodePtr parseInstruction();
