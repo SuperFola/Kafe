@@ -75,6 +75,7 @@ namespace kafe
         MaybeNodePtr parseClass();
             MaybeNodePtr parseConstructor();
         MaybeNodePtr parseRet();
+        MaybeNodePtr parseIf();
     };
 }
 

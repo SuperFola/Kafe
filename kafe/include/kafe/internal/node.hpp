@@ -267,9 +267,25 @@ namespace kafe
             virtual void toString(std::ostream& os, std::size_t indent);
         };
 
+        // shouldn't be in the AST
+        // just useful for code gen
         struct End : public Node
         {
             End();
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
+        struct Elif : public Node
+        {
+            Elif();
+
+            virtual void toString(std::ostream& os, std::size_t indent);
+        };
+
+        struct Else : public Node
+        {
+            Else();
 
             virtual void toString(std::ostream& os, std::size_t indent);
         };

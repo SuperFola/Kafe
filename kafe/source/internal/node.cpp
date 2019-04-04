@@ -406,6 +406,28 @@ void End::toString(std::ostream& os, std::size_t indent)
 
 // ---------------------------
 
+Elif::Elif() :
+    Node("elif")
+{}
+
+void Elif::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(Elif)";
+}
+
+// ---------------------------
+
+Else::Else() :
+    Node("else")
+{}
+
+void Else::toString(std::ostream& os, std::size_t indent)
+{
+    printIndent(os, indent);     os << "(Else)";
+}
+
+// ---------------------------
+
 Ret::Ret(NodePtr value) :
     value(std::move(value))
     , Node("ret")

@@ -1034,3 +1034,160 @@ MaybeNodePtr Parser::parseRet()
     
     return {};
 }
+
+MaybeNodePtr Parser::parseIf()
+{
+    /*
+        Trying to parse:
+
+        if exp then
+            exps*
+        elif exp then
+            exps*
+        else
+            exps*
+        end
+    */
+
+    inlineSpace();
+
+    std::string keyword = "";
+    if (!name(&keyword))
+        return {};
+    if (keyword != "if")
+        return {};
+    
+    // parse condition
+    if (auto exp = parseExp())
+    {
+        // parse 'then'
+        keyword = "";
+        if (!name(&keyword) || keyword != "then")
+            error("Expecting 'then' keyword after condition in if-clause", keyword);
+        
+        bool has_elifs = false;
+        bool has_else = false;
+
+        // read body
+        NodePtrList body;
+        while (true)
+        {
+            MaybeNodePtr inst = parseInstruction();
+
+            // after getting the instruction, check if it's valid
+            if (inst)
+            {
+                // if we found a 'end' token, stop
+                if (inst.value()->nodename == "end")
+                    break;
+                else if (inst.value()->nodename == "elif")
+                {
+                    has_elifs = true;
+                    break;
+                }
+                else if (inst.value()->nodename == "else")
+                {
+                    has_else = true;
+                    break;
+                }
+                body.push_back(inst.value());
+            }
+            else
+                error("Expected valid instruction for body of if", "");
+        }
+
+        // no elifs or else, just return the if
+        if (!has_elifs && !has_else)
+            return std::make_shared<IfClause>(exp, body, NodePtrList{}, NodePtrList{});
+        
+        NodePtrList elifClauses;
+
+        if (!has_elifs && has_else)
+            goto label_parse_else;
+
+        // if then elif ...
+        if (has_elifs)
+        {
+            // read all the elifs
+            while (true)
+            {
+                has_elifs = has_else = false;
+
+                // read condition
+                if (auto cond2 = parseExp())
+                {
+                    // parse 'then'
+                    keyword = "";
+                    if (!name(&keyword) || keyword != "then")
+                        error("Expecting 'then' keyword after condition in if-clause", keyword);
+
+                    // read body
+                    NodePtrList bodyElif;
+                    while (true)
+                    {
+                        MaybeNodePtr inst = parseInstruction();
+
+                        // after getting the instruction, check if it's valid
+                        if (inst)
+                        {
+                            // if we found a 'end' token, stop
+                            if (inst.value()->nodename == "end")
+                                break;
+                            else if (inst.value()->nodename == "elif")
+                            {
+                                has_elifs = true;
+                                break;
+                            }
+                            else if (inst.value()->nodename == "else")
+                            {
+                                has_else = true;
+                                break;
+                            }
+                            bodyElif.push_back(inst.value());
+                        }
+                        else
+                            error("Expected valid instruction for body of if", "");
+                    }
+
+                    elifClauses.push_back(std::make_shared<IfClause>(cond2, bodyElif, NodePtrList{}, NodePtrList{}));
+
+                    if (!has_elifs)
+                        break;
+                }
+                else
+                    error("Expected valid expression as a condition for 'elif'", "");
+            }
+
+            return std::make_shared<IfClause>(exp, body, NodePtrList{}, bodyElse);
+        }
+
+label_parse_else:
+        if (has_else)
+        {
+            NodePtrList bodyElse;
+            while (true)
+            {
+                MaybeNodePtr inst = parseInstruction();
+
+                // after getting the instruction, check if it's valid
+                if (inst)
+                {
+                    // if we found a 'end' token, stop
+                    if (inst.value()->nodename == "end")
+                        break;
+                    bodyElse.push_back(inst.value());
+                }
+                else
+                    error("Expected valid instruction for body of else", "");
+            }
+
+            return std::make_shared<IfClause>(exp, body, elifClauses, bodyElse);
+        }
+        else
+            return std::make_shared<IfClause>(exp, body, elifClauses, NodePtrList{});
+    }
+    else
+        error("Expected valid expression as a condition for 'if'", "");
+    
+    return {};
+}
