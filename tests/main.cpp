@@ -6,6 +6,10 @@
 #include <filesystem>
 #include <string>
 
+
+#include <cstdio>
+#include <ctime>
+
 void handleParseErrors(kafe::Parser& p)
 {
     try
@@ -42,6 +46,21 @@ int main()
     std::size_t i = 0;
     std::size_t passed = 0;
     std::size_t failed = 0;
+
+
+    /*std::string code = "";
+    for (int i=0; i < 1000000; ++i)
+        code += "x: int = 10\n";
+    std::size_t chars = code.size();
+    kafe::Parser p(code);
+
+    double duration = 0.0;
+    std::clock_t starttime = std::clock();
+    p.parse();
+    duration = (std::clock() - starttime) / (double) CLOCKS_PER_SEC;
+    std::cout << duration << std::endl;
+
+    return 0;*/
 
     // testing each file :
     //    comparing generated AST and output
