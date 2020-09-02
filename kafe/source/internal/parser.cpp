@@ -60,7 +60,7 @@ std::size_t ParserCombinators::getSize()
 
 bool ParserCombinators::isEOF()
 {
-    return m_sym == '\0';
+    return m_count >= m_in.size() || m_sym == '\0';
 }
 
 void ParserCombinators::back(std::size_t n)

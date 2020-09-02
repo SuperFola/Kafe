@@ -16,7 +16,9 @@ set(
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Kafe)
-target_link_libraries(${PROJECT_NAME} PRIVATE stdc++fs)
+if (UNIX)
+    target_link_libraries(${PROJECT_NAME} PRIVATE stdc++fs)
+endif()
 
 set_target_properties(
     ${PROJECT_NAME}

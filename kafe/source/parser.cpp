@@ -111,6 +111,12 @@ MaybeNodePtr Parser::parseInstruction()
         return inst;
     else
         back(getCount() - current + 1);
+
+	// if condition then ... [elif condition then ...]+ [else ...] end
+	if (auto inst = parseIf())
+		return inst;
+	else
+		back(getCount() - current + 1);
     
     // fun name(arg:type, ...) -> type {body} end
     if (auto inst = parseFunction())
@@ -142,9 +148,9 @@ MaybeNodePtr Parser::parseInstruction()
     else
         back(getCount() - current + 1);
 
-    // function/method calls as expression, not as instruction!
-    if (auto inst = parseExp())
-        error("Expressions as instructions are forbidden", "");
+    // function/method calls
+	if (auto inst = parseExp())
+		return inst;
     else
         back(getCount() - current + 1);
     
@@ -309,12 +315,17 @@ MaybeNodePtr Parser::parseExp()
         - strings
         - booleans
         - function call
-        - TODO class instanciation
         - method call
         - operations (comparisons, additions...)
     */
 
     auto current = getCount();
+
+	// parsing class instanciation before operations otherwise they are seen as operation member
+	if (auto exp = parseClassInstanciation())  // new Stuff("hello", 12)
+		return exp;
+	else
+		back(getCount() - current + 1);
 
     // parsing operations before anything else because it must use the other parsers
     if (auto exp = parseOperation())
@@ -439,11 +450,6 @@ MaybeNodePtr Parser::parseSingleExp()
         back(getCount() - current + 1);
 
     if (auto exp = parseBool())  // true
-        return exp;
-    else
-        back(getCount() - current + 1);
-    
-    if (auto exp = parseClassInstanciation())  // new Stuff("hello", 12)
         return exp;
     else
         back(getCount() - current + 1);
@@ -1064,6 +1070,9 @@ MaybeNodePtr Parser::parseIf()
         keyword = "";
         if (!name(&keyword) || keyword != "then")
             error("Expecting 'then' keyword after condition in if-clause", keyword);
+
+		if (!endOfLineAndOrComment())
+			error("Expecting end of line or comment after keyword then", keyword);
         
         bool has_elifs = false;
         bool has_else = false;
@@ -1091,6 +1100,8 @@ MaybeNodePtr Parser::parseIf()
                     break;
                 }
                 body.push_back(inst.value());
+				if (!endOfLineAndOrComment())
+					error("Expecting end of line or comment after instruction", "");
             }
             else
                 error("Expected valid instruction for body of if", "");

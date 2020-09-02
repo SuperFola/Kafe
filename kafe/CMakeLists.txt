@@ -25,7 +25,7 @@ file(GLOB_RECURSE SOURCE_FILES
     ${PROJECT_SOURCE_DIR}/thirdparty/*.cpp
 )
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 
 set_target_properties(
     ${PROJECT_NAME}

@@ -1,0 +1,13 @@
+if a == true and b != 12 then
+    print(a, b)
+end
+
+if a == true then
+    print(a)
+elif a == 12 then
+    print(b)
+elif a == 14 then
+    foo(1)
+else
+    print(0)
+end
